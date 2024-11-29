@@ -3,12 +3,7 @@ const saltRounds = 10;
 
 import { Admin } from "../models/admin.js";
 
-export const checkAuth = async (req, res) => {
-  if (req.session.adminId) {
-    return res.status(200).send({ isAuthenticated: true });
-  }
-  return res.status(401).send({ isAuthenticated: false });
-};
+import jwt from "jsonwebtoken";
 
 //register
 export const adminRegister = async (req, res) => {
@@ -73,8 +68,19 @@ export const adminLogin = async (req, res) => {
 
   try {
     if (admin && isPasswordCorrect) {
-      req.session.adminId = admin._id;
-      res.status(200).send({ status: 200, message: "Login successful" });
+      const token = jwt.sign(
+        { adminId: admin._id },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: "1h",
+        }
+      );
+      console.log("Generated Token:", token); // Logs the token if successful
+      res.status(200).send({
+        status: 200,
+        message: "Login successful",
+        token, // Send the token in the response
+      });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
     }
@@ -84,58 +90,24 @@ export const adminLogin = async (req, res) => {
 };
 
 //logout
+
 export const adminLogout = async (req, res) => {
-  // Destroy the session
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).send({ message: "Failed to log out" });
-    }
-    res.status(200).send({ message: "Logged out successfully" });
-  });
+  res.clearCookie("token");
+  res.status(200).send({ message: "Logged out successfully" });
 };
 
-// select admin data
 export const AdminData = async (req, res) => {
-  if (!req.session.adminId) {
-    return res.status(401).send({ message: "Not authenticated" });
-  }
+  const adminId = req.admin.adminId;
 
   try {
-    const admin = await Admin.findById(req.session.adminId);
+    const admin = await Admin.findById(adminId);
     if (!admin) {
       return res.status(404).send({ message: "Admin not found" });
     }
-    console.log("Fetched :", req.session.adminId);
     res.status(200).send({ admin });
   } catch (error) {
     res
       .status(500)
       .send({ message: "Error fetching admin data", error: error.message });
   }
-};
-//update  admin
-export const UpdateAdmin = (req, res) => {
-  if (!req.session.adminId) {
-    return res.status(401).json({ success: false, message: "Not logged in" });
-  }
-
-  const { fullname, email, gender, dob } = req.body;
-
-  Admin.findByIdAndUpdate(
-    req.session.adminId,
-    { fullname, email, gender, Dob: dob },
-    { new: true }
-  )
-    .then((admin) => {
-      if (!admin) {
-        return res
-          .status(404)
-          .json({ success: false, message: "admin not found" });
-      }
-      res.json({ success: true, message: "admin updated successfully", admin });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ success: false, message: "Server error" });
-    });
 };

@@ -1,18 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import Notification from "./Notification";
-
+import Settings from "./Settings";
 const DashboardHome = () => <h1>Dashboard Home</h1>;
-const Settings = () => <h1>Settings</h1>;
 
 const Dashboard = () => {
-  return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
-      <Sidebar />
+  const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("token", token);
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  return (
+    <Box sx={{ display: "flex", height: "100vh",overflow: "hidden" }}>
+      <Sidebar />
       <Box
         sx={{
           flexGrow: 1,
@@ -22,13 +30,11 @@ const Dashboard = () => {
         }}
       >
         <Navbar />
-
         <Box sx={{ marginTop: "64px", padding: "20px" }}>
           <Routes>
             <Route path="/" element={<DashboardHome />} />
-            <Route path="/notification" element={<Notification />} />
-
-            <Route path="/settings" element={<Settings />} />
+            <Route path="notification" element={<Notification />} />
+            <Route path="settings" element={<Settings />} />
           </Routes>
         </Box>
       </Box>

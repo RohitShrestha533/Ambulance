@@ -9,15 +9,21 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      // Call the logout endpoint
-      await axios.post(
-        "http://localhost:5000/hospitalLogout",
-        {},
-        { withCredentials: true }
-      );
+      const token = localStorage.getItem("token");
 
-      // Redirect to the login page
-      navigate("/login");
+      if (token) {
+        await axios.post("http://localhost:5000/hospitalLogout", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        localStorage.removeItem("token");
+        navigate("/login");
+        alert("Logged out successfully");
+      } else {
+        alert("No token found, user might already be logged out.");
+      }
     } catch (error) {
       console.error("Error during logout:", error);
       alert("Failed to log out. Please try again.");
@@ -25,17 +31,33 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    // Fetch hospital name from session data
-    axios
-      .get("http://localhost:5000/hospitalData", { withCredentials: true })
-      .then((response) => {
-        setHospitalName(response.data.hospitalName);
-      })
-      .catch((error) => {
+    const fetchHospitalData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No token found, please login again");
+        }
+
+        const response = await axios.get("http://localhost:5000/hospitalData", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        });
+
+        if (response.data?.hospital) {
+          const hospital = response.data.hospital;
+          setHospitalName(hospital.hospitalName);
+        } else {
+          throw new Error("Invalid hospital data");
+        }
+      } catch (error) {
         console.error("Failed to fetch hospital name:", error);
-        // Optionally handle the case where the session is no longer valid
         setHospitalName("Hospital Dashboard");
-      });
+      }
+    };
+
+    fetchHospitalData();
   }, []);
 
   return (

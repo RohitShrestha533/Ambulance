@@ -5,46 +5,65 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Account = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // let ip = "192.168.100.9";
-  let ip = "172.30.7.31";
+  let ip = "192.168.100.9";
+
   // Fetch user details
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        console.log("Fetching user data...");
+        const token =
+          Platform.OS === "web"
+            ? localStorage.getItem("token")
+            : await AsyncStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("No token found, please login again");
+        }
+
         const response = await axios.get(`http://${ip}:5000/UserData`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           withCredentials: true,
         });
-        // console.log("User Data:", response.data);
-        setUserData(response.data.user);
-        const user = response.data?.user;
 
-        if (user) {
-          user.Dob = new Date(user.Dob).toLocaleDateString("en-US", {
+        console.log("Response from server:", response.data);
+
+        if (response.data?.user) {
+          response.data.user.Dob = new Date(
+            response.data.user.Dob
+          ).toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
             day: "numeric",
           });
-          setUserData(user);
+          setUserData(response.data.user);
         } else {
           throw new Error("Invalid user data");
         }
       } catch (error) {
-        console.error(
-          "Error fetching user data:",
-          error.response || error.message
-        );
+        console.error("Error fetching user data:", error);
         setUserData(null);
+        if (error.response?.status === 401) {
+          navigation.navigate("Login");
+        }
       } finally {
+        console.log("Setting loading to false");
         setLoading(false);
       }
     };
@@ -60,6 +79,14 @@ const Account = () => {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
   if (!userData) {
     return (
       <View style={styles.container}>
@@ -67,9 +94,11 @@ const Account = () => {
       </View>
     );
   }
+
   const editAccount = () => {
     navigation.navigate("AccountUpdate");
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>

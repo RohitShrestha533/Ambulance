@@ -1,18 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Box } from "@mui/material";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DriverForm from "../components/DriverForm";
-
+import Settings from "./Settings";
+import { useState } from "react";
 // Placeholder components for other sections
 const DashboardHome = () => <h1>Dashboard Home</h1>;
 const DriverDetail = () => <h1>Driver Detail Management</h1>;
-const Settings = () => <h1>Settings</h1>;
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("token", token);
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
+    <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       {/* Sidebar */}
       <Sidebar />
 
@@ -20,7 +28,7 @@ const Dashboard = () => {
       <Box
         sx={{
           flexGrow: 1,
-          marginLeft: "240px", // Space for the sidebar
+          // marginLeft: "240px", // Space for the sidebar
           display: "flex",
           flexDirection: "column",
         }}

@@ -6,8 +6,9 @@ import path from "path";
 
 import session from "express-session";
 import { connectDB } from "./db/connectDB.js";
-
-import Routes from "./routes/route.js";
+import router from "./routes/route.js";
+import userRoutes from "./routes/userroute.js";
+import adminRoutes from "./routes/adminroute.js";
 
 dotenv.config();
 
@@ -51,13 +52,13 @@ app.use(
     saveUninitialized: true,
     cookie: {
       secure: false,
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
 
-app.use("/", Routes);
+app.use("/admin", adminRoutes);
+app.use("/", userRoutes);
+app.use("/", router);
 app.get("/", (req, res) => {
   res.send("hi");
 });

@@ -7,21 +7,25 @@ import {
 } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import Dashboard from "./pages/Dashboard";
-import PrivateRoute from "./components/PrivateRoute";
-
+import Settings from "./pages/Settings";
 function App() {
+  const token = localStorage.getItem("token");
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
+        <Route
+          path="/"
+          element={<Navigate to={token ? "/dashboard" : "/login"} />}
+        />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/dashboard/*"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
+          element={token ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/setting"
+          element={token ? <Settings /> : <Navigate to="/login" />}
         />
       </Routes>
     </Router>

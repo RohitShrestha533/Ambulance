@@ -1,13 +1,40 @@
 import bcrypt from "bcrypt";
 const saltRounds = 10;
 import { Hospital } from "../models/hospital.js";
+import jwt from "jsonwebtoken";
+
+const hospitalJWT = (req, res, next) => {
+  const token =
+    req.headers["authorization"]?.split(" ")[1] || req.cookies.token;
+
+  if (!token) {
+    return res.status(401).send({ message: "No token provided" });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Token is not valid" });
+    }
+
+    req.hospital = decoded;
+    next();
+  });
+};
+export { hospitalJWT };
 
 export const hospitalData = async (req, res) => {
-  console.log("Session data:", req.session); // Check session
-  if (req.session.hospital_Name) {
-    return res.send({ hospitalName: req.session.hospital_Name });
-  } else {
-    return res.status(404).send({ message: "No hospital data found" });
+  const hospitalId = req.hospital.hospitalId;
+
+  try {
+    const hospital = await Hospital.findById(hospitalId);
+    if (!hospital) {
+      return res.status(404).send({ message: "hospital not found" });
+    }
+    res.status(200).send({ hospital });
+  } catch (error) {
+    res
+      .status(500)
+      .send({ message: "Error fetching hospital data", error: error.message });
   }
 };
 
@@ -23,12 +50,6 @@ export const getUnverifiedHospitals = async (req, res) => {
   }
 };
 
-export const hospitalcheckAuth = async (req, res) => {
-  if (req.session.hospitalId) {
-    return res.status(200).send({ isAuthenticated: true });
-  }
-  return res.status(401).send({ isAuthenticated: false });
-};
 //register
 export const hospitalRegister = async (req, res) => {
   const {
@@ -114,10 +135,19 @@ export const hospitalLogin = async (req, res) => {
 
   try {
     if (hospital && isPasswordCorrect) {
-      req.session.hospitalId = hospital._id;
-      req.session.hospital_Name = hospital.hospitalName;
-      console.log(req.session);
-      res.status(200).send({ status: 200, message: "Login successful" });
+      const token = jwt.sign(
+        { hospitalId: hospital._id },
+        process.env.JWT_SECRET_KEY,
+        {
+          expiresIn: "1h",
+        }
+      );
+      console.log("Generated Token:", token); // Logs the token if successful
+      res.status(200).send({
+        status: 200,
+        message: "Login successful",
+        token, // Send the token in the response
+      });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
     }
@@ -127,13 +157,8 @@ export const hospitalLogin = async (req, res) => {
 };
 
 //logout
+
 export const hospitalLogout = async (req, res) => {
-  // Destroy the session
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).send({ message: "Failed to log out" });
-    }
-    console.log(req.session);
-    res.status(200).send({ message: "Logged out successfully" });
-  });
+  res.clearCookie("token");
+  res.status(200).send({ message: "Logged out successfully" });
 };

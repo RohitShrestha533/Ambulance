@@ -13,32 +13,24 @@ const LoginPage = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/hospitalLogin",
-        { email, password },
-        {
-          withCredentials: true, // Ensure cookies are sent with the request
-        }
-      );
+      const response = await axios.post("http://localhost:5000/hospitalLogin", {
+        email,
+        password,
+      });
+      const { status, message, token } = response.data;
 
-      if (response.status === 200) {
+      if (status === 200) {
+        localStorage.setItem("token", token);
+        alert("Login successful");
         navigate("/dashboard");
       } else {
-        // In case of a non-200 status, show an alert and set the error message
-        setError(response.data.message || "Invalid credentials");
-        alert(response.data.message || "Invalid credentials");
+        setError(message);
       }
-    } catch (err) {
-      // Handle the error returned by axios
-      if (err.response) {
-        // Backend returned an error response
-        setError(err.response.data.message || "An error occurred");
-        alert(err.response.data.message || "An error occurred");
-      } else {
-        // Network or other errors
-        setError("Something went wrong. Please try again.");
-        alert("Something went wrong. Please try again.");
-      }
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Something went wrong, please try again."
+      );
     }
   };
 

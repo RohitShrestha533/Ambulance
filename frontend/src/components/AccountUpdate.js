@@ -15,6 +15,7 @@ import axios from "axios";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useNavigation } from "@react-navigation/native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const AccountUpdate = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState(null);
@@ -24,17 +25,29 @@ const AccountUpdate = () => {
   const [gender, setGender] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  let ip = "172.30.7.31";
-  // let ip = "192.168.100.9";
-  // Fetch user details
+  // let ip = "172.30.13.177";
+  let ip = "192.168.100.9";
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        const token =
+          Platform.OS === "web"
+            ? localStorage.getItem("token")
+            : await AsyncStorage.getItem("token");
+
+        if (!token) {
+          throw new Error("No token found, please login again");
+        }
+
         const response = await axios.get(`http://${ip}:5000/UserData`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the token to the headers
+          },
           withCredentials: true,
         });
-        const data = response.data.user;
 
+        const data = response.data.user;
         setUserData(data);
         setFullname(data.fullname || "");
         setEmail(data.email || "");
@@ -43,8 +56,6 @@ const AccountUpdate = () => {
       } catch (error) {
         console.error("Error fetching user data:", error);
         setUserData(null);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -52,20 +63,38 @@ const AccountUpdate = () => {
   }, []);
 
   const UpdateUser = async () => {
+    // Check if all fields are filled
     if (!fullname || !email || !gender || !dob) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     try {
+      // Get the token from AsyncStorage (or cookies, depending on how you're storing it)
+      const token = await AsyncStorage.getItem("token");
+
+      // If no token, alert the user
+      if (!token) {
+        Alert.alert("Error", "No token found, please login again");
+        return;
+      }
+
+      // Send the PUT request to update the user details
       const response = await axios.put(
         `http://${ip}:5000/UpdateUser`,
         { fullname, email, gender, dob },
-        { withCredentials: true }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token to the request headers
+          },
+          withCredentials: true,
+        }
       );
+
+      // Handle response success or failure
       if (response.data.success) {
         Alert.alert("Success", "User details updated successfully!");
-        navigation.navigate("Account");
+        navigation.navigate("Account"); // Navigate back to Account screen
       } else {
         Alert.alert("Error", "Failed to update user details");
       }

@@ -15,10 +15,6 @@ export const driverRegister = async (req, res) => {
     ambulanceType,
   } = req.body;
 
-  if (!req.session.hospitalId) {
-    return res.status(403).send("Unauthorized, hospital session not found.");
-  }
-
   const phoneRegex = /^[0-9]{10}$/;
   if (!phoneRegex.test(phone)) {
     return res.status(400).send({ message: "Phone number must be 10 digits." });
@@ -38,8 +34,9 @@ export const driverRegister = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+  const hospitalId = req.hospital.hospitalId;
   try {
-    const hospital = await Hospital.findById(req.session.hospitalId);
+    const hospital = await Hospital.findById(hospitalId);
 
     if (!hospital) {
       return res.status(404).send("Hospital not found");

@@ -7,34 +7,32 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const navigation = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(""); // Clear any previous error
+    const adminData = { email, password };
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/adminLogin",
-        { email, password },
-        {
-          withCredentials: true,
-        }
+        "http://localhost:5000/admin/adminLogin",
+        adminData
       );
+      const { status, message, token } = response.data;
 
-      if (response.status === 200) {
-        navigate("/dashboard");
+      if (status === 200) {
+        localStorage.setItem("token", token);
+        alert("Login successful");
+        navigation("/dashboard");
       } else {
-        setError(response.data.message || "Invalid credentials");
-        alert(response.data.message || "Invalid credentials");
+        setError(message);
       }
-    } catch (err) {
-      if (err.response) {
-        setError(err.response.data.message || "An error occurred");
-        alert(err.response.data.message || "An error occurred");
-      } else {
-        setError("Something went wrong. Please try again.");
-        alert("Something went wrong. Please try again.");
-      }
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+          "Something went wrong, please try again."
+      );
     }
   };
 
@@ -68,11 +66,14 @@ const LoginPage = () => {
         <Typography variant="h5" align="center" sx={{ marginBottom: 2 }}>
           Admin Login
         </Typography>
+
+        {/* Display error if exists */}
         {error && (
           <Typography color="error" variant="body2" align="center">
             {error}
           </Typography>
         )}
+
         <TextField
           label="Email"
           variant="outlined"

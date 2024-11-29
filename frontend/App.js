@@ -7,13 +7,10 @@ import UserProfile from "./src/components/UserProfile";
 import Account from "./src/components/Account";
 import AccountUpdate from "./src/components/AccountUpdate";
 import History from "./src/components/History";
-import Test from "./src/components/Test";
 import Main from "./src/components/Main";
 import TermsAndConditions from "./src/components/TermsAndConditions";
 import PrivacyPolicy from "./src/components/PrivacyPolicy";
 import Map from "./src/components/Map";
-import AdminLogin from "./src/Adminpages/AdminLogin";
-import AdminDashboard from "./src/Adminpages/AdminDashboard";
 import HomeScreen from "./src/components/HomeScreen";
 import RegisterHospital from "./src/components/RegisterHospital";
 import Policies from "./src/components/Policies";
@@ -31,14 +28,9 @@ export default function App() {
           component={Login}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="AdminLogin"
-          component={AdminLogin}
-          options={{ headerShown: false }}
-        />
+
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
 
-        <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
         <Stack.Screen name="Main" component={Main} />
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen

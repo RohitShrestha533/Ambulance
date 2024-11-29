@@ -5,12 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Platform,
   ImageBackground,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
-import { AdminLoginHandel } from "../Adminpages/adminFunction";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // For mobile
 
 const Login = () => {
   const navigation = useNavigation();
@@ -24,9 +25,10 @@ const Login = () => {
   const [logpasswordVisible, setLogPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
-  // let ip = "192.168.100.9";
-  let ip = "172.30.7.31";
-  function UserLoginHandel() {
+  let ip = "192.168.100.9";
+  // let ip = "172.30.13.177";
+
+  async function UserLoginHandel() {
     if (!role) {
       alert("Please select a role before signing in.");
       return;
@@ -35,35 +37,47 @@ const Login = () => {
       alert("Invalid role selected.");
       return;
     }
-
-    if (role === "admin") {
-      AdminLoginHandel(email, password, navigation);
-      return;
-    }
     const userData = {
-      email: email,
+      email,
       password,
       role,
     };
 
-    axios
-      .post(`http://${ip}:5000/userLogin`, userData)
-      .then((response) => {
-        if (response.data.status === 200) {
-          alert("Login successful");
-          navigation.replace("Main");
+    try {
+      const response = await axios.post(
+        `http://${ip}:5000/userLogin`,
+        userData
+      );
+
+      const { status, message, token } = response.data;
+
+      if (status === 200) {
+        alert("Login successful");
+
+        console.log("Token:", token);
+
+        if (Platform.OS === "web") {
+          localStorage.setItem("token", token);
         } else {
-          alert(response.data.message);
+          await AsyncStorage.setItem("token", token);
         }
-      })
-      .catch((error) => {
-        if (error.response && error.response.data.message) {
-          alert(error.response.data.message);
-        } else {
-          alert("Something went wrong");
-          console.log(error.response.data.message);
-        }
-      });
+
+        navigation.replace("Main");
+      } else {
+        alert(message);
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        alert(error.response.data.message);
+      } else {
+        alert("Something went wrong");
+        console.error("Error:", error);
+      }
+    }
   }
 
   function UserRegisterHandel() {

@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   SectionList,
+  Platform,
   TouchableOpacity,
 } from "react-native";
 import axios from "axios";
@@ -22,8 +23,8 @@ const SectionlistToDisplay = [
   },
 ];
 
-let ip = "172.30.7.31";
-// let ip = "192.168.100.9";
+// let ip = "172.30.13.177";
+let ip = "192.168.100.9";
 
 const Item = ({ name, navigation }) => {
   const handlePress = async () => {
@@ -38,17 +39,41 @@ const Item = ({ name, navigation }) => {
         navigation.navigate("Policies");
         break;
       case "Log Out":
-        alert("You have been logged out!");
-
         try {
-          await axios.post(`http://${ip}:5000/userLogout`);
+          let token = "";
+          if (Platform.OS === "web") {
+            token = localStorage.getItem("token");
+          } else {
+            token = await AsyncStorage.getItem("token");
+          }
 
-          await AsyncStorage.removeItem("userToken");
-          navigation.replace("Login");
+          if (token) {
+            await axios.post(
+              `http://${ip}:5000/userLogout`,
+              {},
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+
+            if (Platform.OS === "web") {
+              localStorage.removeItem("token");
+            } else {
+              await AsyncStorage.removeItem("token");
+            }
+
+            navigation.replace("Login");
+            alert("Logged out successfully");
+          } else {
+            alert("No token found, user might already be logged out.");
+          }
         } catch (error) {
-          console.error("Error during logout: ", error);
+          console.error("Error during logout:", error);
           alert("Logout failed. Please try again.");
         }
+
         break;
       default:
         navigation.navigate("Details", { name });

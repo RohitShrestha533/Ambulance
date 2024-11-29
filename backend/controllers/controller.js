@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 const saltRounds = 10;
+import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.js";
 
@@ -40,7 +41,7 @@ export const userRegister = async (req, res) => {
   }
 };
 
-//login
+// Login function with JWT authentication
 export const userLogin = async (req, res) => {
   const { email, password, role } = req.body;
   let user;
@@ -61,8 +62,17 @@ export const userLogin = async (req, res) => {
 
   try {
     if (user && isPasswordCorrect) {
-      req.session.userId = user._id;
-      res.status(200).send({ status: 200, message: "Login successful" });
+      const token = jwt.sign(
+        { userId: user._id, role: user.role },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: "15d" }
+      );
+
+      res.status(200).send({
+        status: 200,
+        message: "Login successful",
+        token, // Send the token in the response
+      });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
     }
@@ -71,29 +81,19 @@ export const userLogin = async (req, res) => {
   }
 };
 
-//logout
 export const userLogout = async (req, res) => {
-  // Destroy the session
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).send({ message: "Failed to log out" });
-    }
-    res.status(200).send({ message: "Logged out successfully" });
-  });
+  res.status(200).send({ message: "Logged out successfully" });
 };
 
 // select user data
 export const UserData = async (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).send({ message: "Not authenticated" });
-  }
+  const userId = req.user.userId;
 
   try {
-    const user = await User.findById(req.session.userId);
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-    console.log("Fetched user:");
     res.status(200).send({ user });
   } catch (error) {
     res
@@ -101,29 +101,31 @@ export const UserData = async (req, res) => {
       .send({ message: "Error fetching user data", error: error.message });
   }
 };
-//update  user
-export const UpdateUser = (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: "Not logged in" });
-  }
 
+// update user (using JWT)
+export const UpdateUser = async (req, res) => {
   const { fullname, email, gender, dob } = req.body;
 
-  User.findByIdAndUpdate(
-    req.session.userId,
-    { fullname, email, gender, Dob: dob },
-    { new: true }
-  )
-    .then((user) => {
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
-      }
-      res.json({ success: true, message: "User updated successfully", user });
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({ success: false, message: "Server error" });
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId, // Get userId from the JWT token
+      { fullname, email, gender, Dob: dob },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "User updated successfully",
+      user: updatedUser,
     });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };

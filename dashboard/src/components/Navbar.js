@@ -1,37 +1,37 @@
-import React, { useEffect, useState } from "react";
 import { AppBar, Toolbar, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Navbar = () => {
-  const [hospitalName, setHospitalName] = useState("");
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      // Call the logout endpoint
-      await axios.post(
-        "http://localhost:5000/adminLogout",
-        {},
-        { withCredentials: true }
-      );
-      navigate("/login");
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        await axios.post(
+          "http://localhost:5000/admin/adminLogout",
+
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        localStorage.removeItem("token");
+
+        navigate("/login");
+        alert("Logged out successfully");
+      } else {
+        alert("No token found, user might already be logged out.");
+      }
     } catch (error) {
       console.error("Error during logout:", error);
       alert("Failed to log out. Please try again.");
     }
   };
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/AdminData", { withCredentials: true })
-      .then((response) => {
-        setHospitalName(response.data.adminId);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch hospital name:", error);
-      });
-  }, []);
 
   return (
     <AppBar
@@ -40,7 +40,7 @@ const Navbar = () => {
     >
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          {hospitalName || "Admin Dashboard"}
+          Admin Dashboard
         </Typography>
         <Button color="inherit" onClick={handleLogout}>
           Logout

@@ -57,10 +57,13 @@ const DriverForm = () => {
       ambulanceType,
     };
 
-    // Send the data to the backend
+    const token = localStorage.getItem("token"); // Send the data to the backend
     axios
       .post("http://localhost:5000/driverRegister", driverData, {
-        withCredentials: true, // Important: Ensure credentials are sent
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
       })
       .then((response) => {
         if (response.data.status === "ok") {
