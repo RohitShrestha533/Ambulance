@@ -84,7 +84,8 @@ const Notification = () => {
                 <TableCell>{hospital.ambulanceCount}</TableCell>
                 <TableCell>{hospital.hospitalType}</TableCell>
                 <TableCell>{hospital.operatingHours}</TableCell>
-                <TableCell>{hospital.coordinates}</TableCell>
+                <TableCell>
+                  {hospital.location.coordinates[0]}, {hospital.location.coordinates[1]}</TableCell>
                 <TableCell>{hospital.emergencyContact}</TableCell>
                 <TableCell>
                   <Button

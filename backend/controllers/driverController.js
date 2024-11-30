@@ -15,14 +15,12 @@ export const driverRegister = async (req, res) => {
     ambulanceType,
   } = req.body;
 
-  // Validate phone number format
   const phoneRegex = /^[0-9]{10}$/;
   if (!phoneRegex.test(phone)) {
     return res.status(400).send({ message: "Phone number must be 10 digits." });
   }
 
   try {
-    // Fetch the hospital ID from the request
     const hospitalId = req.hospital?.hospitalId;
     if (!hospitalId) {
       return res.status(400).send({ message: "Hospital ID is missing." });
@@ -34,19 +32,16 @@ export const driverRegister = async (req, res) => {
       return res.status(404).send({ message: "Hospital not found." });
     }
 
-    // Count the number of drivers already associated with this hospital
     const currentDriverCount = await Driver.countDocuments({
       hospital: hospitalId,
     });
 
-    // Check if the hospital has reached its driver limit
     if (currentDriverCount >= hospital.ambulanceCount) {
       return res
         .status(400)
         .send({ message: "Driver limit reached. Cannot add more drivers." });
     }
 
-    // Check for existing driver
     const existingDriver = await Driver.findOne({
       $or: [{ email }, { ambulanceNumber }, { licenseNumber }],
     });
@@ -55,10 +50,9 @@ export const driverRegister = async (req, res) => {
       return res.status(400).send({ message: "Driver already registered." });
     }
 
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create the new driver
+    const location = hospital.location;
     const newDriver = await Driver.create({
       driverName,
       ambulanceNumber,
@@ -69,8 +63,10 @@ export const driverRegister = async (req, res) => {
       password: hashedPassword,
       hospitalName: hospital.hospitalName,
       hospital: hospitalId,
-    });
-    // Update the hospital's drivers array with the new driver's ID
+      location: {
+        type: "Point", // Geospatial type
+        coordinates: location.coordinates, // Use the hospital's coordinates
+      },    });
     hospital.drivers.push(newDriver._id);
     await hospital.save();
     res

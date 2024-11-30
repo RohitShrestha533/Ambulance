@@ -27,14 +27,15 @@ const RegisterHospital = () => {
   const [hospitalType, setHospitalType] = useState("");
   const [operatingHours, setOperatingHours] = useState("");
   const [emergencyContact, setEmergencyContact] = useState("");
-  const [coordinates, setCoordinates] = useState("27.1, 84");
+  const [coordinates, setCoordinates] = useState([27.1, 84]);
   const [showMap, setShowMap] = useState(false);
 
-  const handleMapMessage = (event) => {
-    const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
-    setCoordinates(`${latitude}, ${longitude}`);
-    setShowMap(false);
-  };
+const handleMapMessage = (event) => {
+  const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
+  setCoordinates([latitude, longitude]); 
+  setShowMap(false);
+};
+
 
   const mapHtml = `<!DOCTYPE html>
 <html>
@@ -177,13 +178,10 @@ const RegisterHospital = () => {
           }}
           style={{ zIndex: 5 }}
         >
-          <Text
-            style={[styles.input, { zIndex: 2 }]}
-            value={coordinates}
-            onChangeText={setCoordinates}
-          >
-            {coordinates}
-          </Text>
+   
+            <Text style={[styles.input, { zIndex: 2 }]}>
+    {coordinates ? `Longitude: ${coordinates[0]}, Latitude: ${coordinates[1]}` : "Select coordinates"}
+  </Text>
         </TouchableOpacity>
         {showMap && (
           <View style={{ flex: 1, height: 500 }}>

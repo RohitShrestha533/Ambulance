@@ -137,7 +137,19 @@ export const hospitalRegister = async (req, res) => {
     if (existingHospital) {
       return res.status(400).send({ message: "Hospital already registered." });
     }
+ // Validate coordinates
+  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+    return res.status(400).send({
+      message: "Coordinates must be an array with two numbers: [longitude, latitude].",
+    });
+  }
 
+  const [longitude, latitude] = coordinates;
+  if (typeof longitude !== "number" || typeof latitude !== "number") {
+    return res.status(400).send({
+      message: "Coordinates should be numbers.",
+    });
+  }
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -156,7 +168,7 @@ export const hospitalRegister = async (req, res) => {
       ambulanceCount,
       hospitalType,
       operatingHours,
-      coordinates,
+      location: { type: "Point", coordinates: [longitude, latitude] },
       emergencyContact,
       approved,
     });

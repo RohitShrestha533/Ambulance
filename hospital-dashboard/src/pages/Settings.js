@@ -108,7 +108,8 @@ const Settings = () => {
             <TableCell>{hospitalData.ambulanceCount}</TableCell>
             <TableCell>{hospitalData.hospitalType}</TableCell>
             <TableCell>{hospitalData.operatingHours}</TableCell>
-            <TableCell>{hospitalData.coordinates}</TableCell>
+            <TableCell>
+                  {hospitalData.location.coordinates[0]}, {hospitalData.location.coordinates[1]}</TableCell>
             <TableCell>{hospitalData.emergencyContact}</TableCell>
             <TableCell>
               <Button
