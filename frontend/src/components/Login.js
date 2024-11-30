@@ -44,11 +44,12 @@ const Login = () => {
     };
 
     try {
-      const response = await axios.post(
-        `http://${ip}:5000/userLogin`,
-        userData
-      );
-
+      let response;
+      if (role === "user") {
+        response = await axios.post(`http://${ip}:5000/userLogin`, userData);
+      } else {
+        response = await axios.post(`http://${ip}:5000/driverLogin`, userData);
+      }
       const { status, message, token } = response.data;
 
       if (status === 200) {
@@ -56,13 +57,21 @@ const Login = () => {
 
         console.log("Token:", token);
 
-        if (Platform.OS === "web") {
-          localStorage.setItem("token", token);
+        if (role === "user") {
+          if (Platform.OS === "web") {
+            localStorage.setItem("token", token);
+          } else {
+            await AsyncStorage.setItem("token", token);
+          }
+          navigation.replace("Main");
         } else {
-          await AsyncStorage.setItem("token", token);
+          if (Platform.OS === "web") {
+            localStorage.setItem("drivertoken", token);
+          } else {
+            await AsyncStorage.setItem("drivertoken", token);
+          }
+          navigation.replace("DriverMain");
         }
-
-        navigation.replace("Main");
       } else {
         alert(message);
       }

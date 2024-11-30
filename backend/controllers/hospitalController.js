@@ -123,7 +123,6 @@ export const hospitalRegister = async (req, res) => {
     return res.status(400).send({ message: "Invalid email format." });
   }
 
-  // Check for duplicate hospital
   try {
     const existingHospital = await Hospital.findOne({
       $or: [
@@ -137,19 +136,23 @@ export const hospitalRegister = async (req, res) => {
     if (existingHospital) {
       return res.status(400).send({ message: "Hospital already registered." });
     }
- // Validate coordinates
-  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
-    return res.status(400).send({
-      message: "Coordinates must be an array with two numbers: [longitude, latitude].",
-    });
-  }
+    if (
+      !coordinates ||
+      !Array.isArray(coordinates) ||
+      coordinates.length !== 2
+    ) {
+      return res.status(400).send({
+        message:
+          "Coordinates must be an array with two numbers: [longitude, latitude].",
+      });
+    }
 
-  const [longitude, latitude] = coordinates;
-  if (typeof longitude !== "number" || typeof latitude !== "number") {
-    return res.status(400).send({
-      message: "Coordinates should be numbers.",
-    });
-  }
+    const [longitude, latitude] = coordinates;
+    if (typeof longitude !== "number" || typeof latitude !== "number") {
+      return res.status(400).send({
+        message: "Coordinates should be numbers.",
+      });
+    }
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -176,7 +179,7 @@ export const hospitalRegister = async (req, res) => {
     res.status(200).send({
       status: "ok",
       data: "Hospital registered successfully.",
-      hospitalId: newHospital._id,
+      // hospitalId: newHospital._id,
     });
   } catch (error) {
     console.error("Error registering hospital:", error.message);

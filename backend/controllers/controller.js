@@ -3,7 +3,6 @@ const saltRounds = 10;
 import jwt from "jsonwebtoken";
 
 import { User } from "../models/user.js";
-
 //register
 export const userRegister = async (req, res) => {
   const { email, phone, password, confirmpassword } = req.body;
