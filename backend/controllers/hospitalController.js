@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 
 const hospitalJWT = (req, res, next) => {
   const token =
-    req.headers["authorization"]?.split(" ")[1] || req.cookies.token;
+    req.headers["authorization"]?.split(" ")[1] || req.cookies.hospitaltoken;
 
   if (!token) {
     return res.status(401).send({ message: "No token provided" });
@@ -41,16 +41,43 @@ export const hospitalData = async (req, res) => {
 export const getUnverifiedHospitals = async (req, res) => {
   try {
     console.log("Fetching unverified hospitals...");
-    const unverifiedHospitals = await Hospital.find({ approved: "no" });
-    console.log(unverifiedHospitals);
 
-    res.status(200).json(unverifiedHospitals);
+    const unverifiedHospitals = await Hospital.find({ approved: "no" });
+
+    const unverifiedCount = await Hospital.countDocuments({ approved: "no" });
+
+    // console.log("Unverified Hospitals:", unverifiedHospitals);
+    // console.log("Unverified Hospitals Count:", unverifiedCount);
+
+    res
+      .status(200)
+      .json({ count: unverifiedCount, hospitals: unverifiedHospitals });
   } catch (error) {
+    console.error("Error fetching unverified hospitals:", error);
     res.status(500).json({ error: "Failed to fetch unverified hospitals" });
   }
 };
 
-//register
+export const approveHospital = async (req, res) => {
+  try {
+    const { hospitalId } = req.params;
+    const hospital = await Hospital.findByIdAndUpdate(
+      hospitalId,
+      { approved: "yes" },
+      { new: true }
+    );
+
+    if (!hospital) {
+      return res.status(404).json({ error: "Hospital not found" });
+    }
+
+    res.status(200).json(hospital);
+  } catch (error) {
+    console.error("Error approving hospital:", error);
+    res.status(500).json({ error: "Failed to approve hospital" });
+  }
+};
+
 export const hospitalRegister = async (req, res) => {
   const {
     hospitalName,
@@ -66,44 +93,85 @@ export const hospitalRegister = async (req, res) => {
     coordinates,
     emergencyContact,
   } = req.body;
-  console.log(req.body);
+
+  console.log("Received data:", req.body);
+
+  // Validation
   const phoneRegex = /^[0-9]{10}$/;
-  if (!phoneRegex.test(adminContact)) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (
+    !hospitalName ||
+    !registrationNumber ||
+    !address ||
+    !email ||
+    !adminName ||
+    !adminContact ||
+    !password ||
+    !emergencyContact
+  ) {
+    return res.status(400).send({ message: "All fields are required." });
+  }
+
+  if (!phoneRegex.test(adminContact) || !phoneRegex.test(emergencyContact)) {
     return res
       .status(400)
-      .send({ message: "adminContact number must be 10 digits." });
+      .send({ message: "Contact numbers must be 10 digits." });
   }
 
-  const oldHospital = await Hospital.findOne({
-    $or: [{ email: email }, { registrationNumber: registrationNumber }],
-  });
-
-  if (oldHospital) {
-    return res.status(400).send({ message: "Hospital already Registered" });
+  if (!emailRegex.test(email)) {
+    return res.status(400).send({ message: "Invalid email format." });
   }
 
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
-  const approved = "no";
-
+  // Check for duplicate hospital
   try {
-    await Hospital.create({
-      email: email,
-      password: hashedPassword,
+    const existingHospital = await Hospital.findOne({
+      $or: [
+        { email: email },
+        { registrationNumber: registrationNumber },
+        { adminContact: adminContact },
+        { emergencyContact: emergencyContact },
+      ],
+    });
+
+    if (existingHospital) {
+      return res.status(400).send({ message: "Hospital already registered." });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Default approval status
+    const approved = "no";
+
+    // Create hospital record
+    const newHospital = await Hospital.create({
       hospitalName,
       registrationNumber,
       address,
+      email,
       adminName,
       adminContact,
+      password: hashedPassword,
       ambulanceCount,
       hospitalType,
       operatingHours,
       coordinates,
       emergencyContact,
-      approved: approved,
+      approved,
     });
-    res.send({ status: "ok", data: "Hospital detail sent" });
+
+    res.status(200).send({
+      status: "ok",
+      data: "Hospital registered successfully.",
+      hospitalId: newHospital._id,
+    });
   } catch (error) {
-    res.status(500).send({ status: "error", message: error.message });
+    console.error("Error registering hospital:", error.message);
+    res.status(500).send({
+      status: "error",
+      message: "Internal server error. Please try again later.",
+    });
   }
 };
 

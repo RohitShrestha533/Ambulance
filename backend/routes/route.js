@@ -5,7 +5,7 @@ import {
   hospitalLogin,
   hospitalLogout,
   hospitalJWT,
-  hospitalData,
+  hospitalData,approveHospital,
 } from "../controllers/hospitalController.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
 const router = express.Router();
@@ -13,6 +13,7 @@ const router = express.Router();
 router.get("/hospitalData", hospitalJWT, hospitalData);
 
 router.post("/driverRegister", hospitalJWT, driverRegister);
+router.post('/api/hospitals/approve/:hospitalId', approveHospital);
 
 router.get("/api/getUnverifiedHospitals", getUnverifiedHospitals);
 router.post("/hospitalLogin", hospitalLogin);

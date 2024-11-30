@@ -7,7 +7,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("admintoken");
 
       if (token) {
         await axios.post(
@@ -20,7 +20,7 @@ const Navbar = () => {
           }
         );
 
-        localStorage.removeItem("token");
+        localStorage.removeItem("admintoken");
 
         navigate("/login");
         alert("Logged out successfully");

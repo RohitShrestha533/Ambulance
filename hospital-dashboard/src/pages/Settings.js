@@ -21,7 +21,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchHospitalData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("hospitaltoken");
         console.log("Fetching hospital data...", token);
 
         if (!token) {

@@ -13,6 +13,7 @@ const hospitalSchema = new mongoose.Schema(
     operatingHours: { type: String },
     coordinates: { type: String },
     emergencyContact: { type: Number, unique: true },
+    drivers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Driver" }],
     approved: { type: String },
     lastLogin: {
       type: Date,

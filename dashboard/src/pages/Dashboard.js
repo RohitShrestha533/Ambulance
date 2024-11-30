@@ -11,7 +11,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("admintoken");
     console.log("token", token);
     if (!token) {
       navigate("/login");
@@ -19,12 +19,12 @@ const Dashboard = () => {
   }, [navigate]);
 
   return (
-    <Box sx={{ display: "flex", height: "100vh",overflow: "hidden" }}>
-      <Sidebar />
+    <Box sx={{ display: "flex", height: "100vh",overflow: "auto" }}>
+      <Sidebar  />
       <Box
         sx={{
           flexGrow: 1,
-          marginLeft: "240px",
+          marginLeft: "200px",
           display: "flex",
           flexDirection: "column",
         }}
@@ -38,7 +38,7 @@ const Dashboard = () => {
           </Routes>
         </Box>
       </Box>
-    </Box>
+      </Box>
   );
 };
 

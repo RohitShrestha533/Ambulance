@@ -57,7 +57,7 @@ const DriverForm = () => {
       ambulanceType,
     };
 
-    const token = localStorage.getItem("token"); // Send the data to the backend
+    const token = localStorage.getItem("hospitaltoken"); // Send the data to the backend
     axios
       .post("http://localhost:5000/driverRegister", driverData, {
         headers: {

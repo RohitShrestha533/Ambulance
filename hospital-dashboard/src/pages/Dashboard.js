@@ -13,7 +13,7 @@ const DriverDetail = () => <h1>Driver Detail Management</h1>;
 const Dashboard = () => {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("hospitaltoken");
     console.log("token", token);
     if (!token) {
       navigate("/login");

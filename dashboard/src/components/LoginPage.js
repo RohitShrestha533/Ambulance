@@ -22,7 +22,7 @@ const LoginPage = () => {
       const { status, message, token } = response.data;
 
       if (status === 200) {
-        localStorage.setItem("token", token);
+        localStorage.setItem("admintoken", token);
         alert("Login successful");
         navigation("/dashboard");
       } else {

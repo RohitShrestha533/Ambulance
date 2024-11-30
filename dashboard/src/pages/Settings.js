@@ -21,7 +21,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("admintoken");
         console.log("Fetching user data...", token);
 
         if (!token) {

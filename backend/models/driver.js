@@ -11,6 +11,7 @@ const driverSchema = new mongoose.Schema(
     hospitalName: String,
     gender: String,
     Dob: Date,
+    hospital: { type: mongoose.Schema.Types.ObjectId, ref: "Hospital" },
     lastLogin: {
       type: Date,
       default: Date.now,

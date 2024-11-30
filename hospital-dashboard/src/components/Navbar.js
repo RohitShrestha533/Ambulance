@@ -9,7 +9,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("hospitaltoken");
 
       if (token) {
         await axios.post("http://localhost:5000/hospitalLogout", {
@@ -18,7 +18,7 @@ const Navbar = () => {
           },
         });
 
-        localStorage.removeItem("token");
+        localStorage.removeItem("hospitaltoken");
         navigate("/login");
         alert("Logged out successfully");
       } else {
@@ -33,7 +33,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchHospitalData = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("hospitaltoken");
         if (!token) {
           throw new Error("No token found, please login again");
         }

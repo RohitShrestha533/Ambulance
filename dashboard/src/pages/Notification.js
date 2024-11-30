@@ -10,56 +10,60 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-
+import axios from "axios";
 const Notification = () => {
   const [hospitals, setHospitals] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/getUnverifiedHospitals")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Fetched hospitals:", data);
-        setHospitals(data);
-      })
-      .catch((error) => console.error("Error fetching hospitals:", error));
+    const fetchHospitals = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/getUnverifiedHospitals");
+        // console.log("Fetched hospitals:", response.data);
+        setHospitals(response.data.hospitals); 
+      } catch (error) {
+        console.error("Error fetching hospitals:", error);
+      }
+    };
+
+    fetchHospitals();
   }, []);
 
-  const handleApprove = (hospitalId) => {
-    fetch(`http://localhost:5000/api/hospitals/approve/${hospitalId}`, {
-      method: "POST",
-    })
-      .then((response) => response.json())
-      .then(() => {
-        setHospitals((prev) =>
-          prev.filter((hospital) => hospital._id !== hospitalId)
-        );
-      })
-      .catch((error) => console.error("Error approving hospital:", error));
-  };
+ const handleApprove = async (hospitalId) => {
+    try {
+      const response = await axios.post(`http://localhost:5000/api/hospitals/approve/${hospitalId}`);
+      // console.log("Approved hospital:", response.data);
 
+      setHospitals((prevHospitals) =>
+        prevHospitals.filter((hospital) => hospital._id !== hospitalId)
+      );
+    } catch (error) {
+      console.error("Error approving hospital:", error);
+    }
+  };
   return (
-    <TableContainer component={Paper} sx={{ margin: "30px -10px" }}>
+    <TableContainer component={Paper} sx={{ margin: "30px ",
+        overflowX: "auto", width:"100%" }}>
       <Typography
         variant="h6"
         sx={{ padding: "6px", backgroundColor: "#f5f5f5" }}
       >
         Hospitals Pending Approval
       </Typography>
-      <Table>
+      <Table sx={{ minWidth: "1200px" }}>
         <TableHead>
           <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
             <TableCell>Hospital Name</TableCell>
-            <TableCell>Registration Number</TableCell>
-            <TableCell>Admin Name</TableCell>
-            <TableCell>Admin Number</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Ambulance</TableCell>
-            <TableCell>HospitalType</TableCell>
-            <TableCell>OperatingHours</TableCell>
-            <TableCell>coordinates</TableCell>
-            <TableCell>emergencyContact</TableCell>
-            <TableCell>Action</TableCell>
+            <TableCell sx={{ width: 50 }}>Registration Number</TableCell>
+            <TableCell sx={{ width: 50 }}>Admin Name</TableCell>
+            <TableCell sx={{ width: 50 }}>Admin Number</TableCell>
+            <TableCell sx={{ width: 50 }}>Address</TableCell>
+            <TableCell sx={{ width: 50 }}>Email</TableCell>
+            <TableCell sx={{ width: 50 }}>Ambulance</TableCell>
+            <TableCell sx={{ width: 50 }}>HospitalType</TableCell>
+            <TableCell sx={{ width: 50 }}>OperatingHours</TableCell>
+            <TableCell sx={{ width: 50 }}>coordinates</TableCell>
+            <TableCell sx={{ width: 50 }}>emergencyContact</TableCell>
+            <TableCell sx={{ width: 50 }}>Action</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

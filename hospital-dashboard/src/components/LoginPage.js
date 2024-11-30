@@ -20,7 +20,7 @@ const LoginPage = () => {
       const { status, message, token } = response.data;
 
       if (status === 200) {
-        localStorage.setItem("token", token);
+        localStorage.setItem("hospitaltoken", token);
         alert("Login successful");
         navigate("/dashboard");
       } else {

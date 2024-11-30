@@ -146,8 +146,7 @@ const RegisterHospital = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <ScrollView style={styles.container}>
+    ><ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.header}>Register Hospital</Text>
 
         <TextInput
@@ -264,6 +263,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+    minHeight: Platform.OS === 'web' ? '100vh' : 'auto',
+  },
+  scrollContainer: {
+    flexGrow: 1, // Ensures the scrollview takes up all available space
+    paddingBottom: 50, // Extra padding to ensure scroll at the bottom
   },
   header: {
     fontSize: 24,
