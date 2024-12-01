@@ -7,10 +7,12 @@ import {
   UpdateUser,
   driversnearby,
 } from "../controllers/controller.js";
+import { bookambulance } from "../controllers/bookingcontroller.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
 const router = express.Router();
 
 router.post("/drivers-nearby", authenticateJWT, driversnearby);
+router.post("/book-ambulance", authenticateJWT, bookambulance);
 
 router.post("/userRegister", userRegister);
 router.post("/userLogin", userLogin);

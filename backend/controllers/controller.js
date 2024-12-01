@@ -131,14 +131,50 @@ export const UpdateUser = async (req, res) => {
 };
 
 export const driversnearby = async (req, res) => {
-  const { latitude, longitude, radius = 50 } = req.body;
+  const {
+    latitude,
+    longitude,
+    deslatitude,
+    deslongitude,
+    radius = 50,
+  } = req.body;
 
-  if (!latitude || !longitude) {
+  if (!latitude || !longitude || !deslongitude || !deslatitude) {
     return res
       .status(400)
       .json({ message: "Latitude and Longitude are required" });
   }
 
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+
+  const haversineDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRadians(lat1)) *
+        Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Distance in kilometers
+    return distance; // Return distance in kilometers
+  };
+
+  const distance = haversineDistance(
+    latitude,
+    longitude,
+    deslatitude,
+    deslongitude
+  );
+
+  console.log(
+    `The distance between the two points is ${distance * 1000} meters.`
+  );
   const radiusInMeters = radius * 1000;
 
   try {
@@ -169,52 +205,9 @@ export const driversnearby = async (req, res) => {
         $limit: 100,
       },
     ]);
-
-    res.status(200).json({ ambulances });
+    res.status(200).json({ ambulances, totaldistance: distance * 1000 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error fetching ambulances", error });
   }
 };
-
-// export const driversNearby = async (req, res) => {
-//   const { latitude, longitude, radius = 50 } = req.body; // default radius = 50 km
-//   const userId = req.user.userId;
-
-//   try {
-//     if (userId) {
-//       if (!latitude || !longitude) {
-//         return res
-//           .status(400)
-//           .json({ message: "Latitude and longitude are required" });
-//       }
-
-//       const radiusInMeters = radius * 1000;
-
-//       const drivers = await Driver.aggregate([
-//         {
-//           $geoNear: {
-//             near: {
-//               type: "Point",
-//               coordinates: [longitude, latitude], // User's location [longitude, latitude]
-//             },
-//             distanceField: "distance", // Store the calculated distance in the `distance` field
-//             maxDistance: radiusInMeters, // Maximum distance in meters
-//             spherical: true, // Use spherical geometry to calculate the distance
-//           },
-//         },
-//         {
-//           $limit: 100, // Limit to 100 drivers (you can change this number)
-//         },
-//       ]);
-
-//       // Send the response with the nearby drivers
-//       res.status(200).json({ drivers });
-//     } else {
-//       res.status(500).json({ message: "No user token", error });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: "Error fetching drivers", error });
-//   }
-// };

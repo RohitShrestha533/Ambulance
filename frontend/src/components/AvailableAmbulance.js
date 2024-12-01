@@ -6,41 +6,110 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AvailableAmbulance = ({ route }) => {
-  const { drivers } = route.params; // Destructure drivers from route params
+  const { drivers, mylocation, destination, totaldistance } = route.params; // Destructure drivers from route params
   console.log("Available ambulances:", drivers);
+  console.log("UserLocation:", mylocation);
+  console.log("DestinationLocation:", destination);
+  // let ip = "192.168.218.106";
+  let ip = "192.168.100.9";
+  const bookAmbulance = async (
+    ambulanceId,
+    driverId,
+    hospitalId,
+    distance,
+    userLocation,
+    destination,
+    price,
+    ambulanceType
+  ) => {
+    try {
+      const token =
+        Platform.OS === "web"
+          ? localStorage.getItem("token")
+          : await AsyncStorage.getItem("token");
 
-  const bookAmbulance = (ambulanceNumber) => {
-    Alert.alert(
-      "Booking Confirmed",
-      `You have booked ambulance: ${ambulanceNumber}`
-    );
+      if (!token) {
+        throw new Error("No token found, please login again");
+      }
+      const response = await fetch(`http://${ip}:5000/book-ambulance`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ambulanceId,
+          driverId,
+          hospitalId,
+          distance,
+          destination,
+          userLocation,
+          price,
+          ambulanceType,
+        }),
+      });
+      if (!response.ok) {
+        console.error(`HTTP Error: ${response.status}`);
+        throw new Error("Failed to book ambulance");
+      }
+      const data = await response.json();
+      Alert.alert("Booking Requested", data);
+    } catch (error) {
+      console.error("Error booking ambulance:", error);
+      Alert.alert("Error", "Unable to book ambulance. Please try again.");
+    }
   };
 
-  const renderDriverCard = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.header}>Ambulance Details</Text>
-      <Text style={styles.text}>Ambulance Number: {item.ambulanceNumber}</Text>
-      <Text style={styles.text}>Ambulance Type: {item.ambulanceType}</Text>
-      <Text style={styles.text}>
-        Distance: {item.distance.toFixed(2)} meters
-      </Text>
-      <Text style={styles.header}>Driver Details</Text>
-      <Text style={styles.text}>Name: {item.driverDetails?.fullname}</Text>
-      <Text style={styles.text}>Phone Number: {item.driverDetails?.phone}</Text>
-      <Text style={styles.text}>
-        License Number: {item.driverDetails?.licenseNumber}
-      </Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => bookAmbulance(item.ambulanceNumber)}
-      >
-        <Text style={styles.buttonText}>Book</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const renderDriverCard = ({ item }) => {
+    const price =
+      item.ambulanceType === "Advance"
+        ? totaldistance * 0.1
+        : item.ambulanceType === "Basic"
+        ? totaldistance * 0.05
+        : item.ambulanceType === "Transport"
+        ? totaldistance * 0.03
+        : 0; // Default to 0 if ambulance type is invalid
+
+    return (
+      <View style={styles.card}>
+        <Text style={styles.header}>Ambulance Details</Text>
+        <Text style={styles.header}>Price: {price.toFixed(2)}</Text>
+        <Text style={styles.text}>Name: {item.driverDetails?.fullname}</Text>
+        <Text style={styles.text}>
+          Phone Number: {item.driverDetails?.phone}
+        </Text>
+        <Text style={styles.text}>
+          Ambulance Number: {item.ambulanceNumber}
+        </Text>
+        <Text style={styles.text}>Ambulance Type: {item.ambulanceType}</Text>
+        <Text style={styles.text}>
+          Distance: {item.distance.toFixed(2)} meters
+        </Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            bookAmbulance(
+              item._id,
+              item.driver,
+              item.hospital,
+              item.distance.toFixed(2),
+              mylocation,
+              destination,
+              price.toFixed(2),
+              item.ambulanceType
+            )
+          }
+        >
+          <Text style={styles.buttonText}>Book</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>

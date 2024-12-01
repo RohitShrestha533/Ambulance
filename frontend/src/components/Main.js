@@ -24,6 +24,7 @@ const AA = () => {
   const [mylocation, setMylocation] = useState("Fetching location...");
   const [coordinates, setCoordinates] = useState("");
   const [destination, setDestination] = useState("");
+  const [locationtype, setLocationtype] = useState("");
   const [showMap, setShowMap] = useState(false);
   const [availableDrivers, setAvailableDrivers] = useState([]);
 
@@ -35,6 +36,8 @@ const AA = () => {
 
     try {
       const [lat, lng] = coordinates.split(",").map(parseFloat);
+      const [deslat, deslng] = destination.split(",").map(parseFloat);
+
       const token =
         Platform.OS === "web"
           ? localStorage.getItem("token")
@@ -45,6 +48,7 @@ const AA = () => {
       }
 
       console.log(`Fetching drivers near: Latitude ${lat}, Longitude ${lng}`);
+      console.log("desti :", destination);
 
       const response = await fetch(`http://${ip}:5000/drivers-nearby`, {
         method: "POST",
@@ -52,7 +56,12 @@ const AA = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ latitude: lat, longitude: lng }),
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lng,
+          deslatitude: deslat,
+          deslongitude: deslng,
+        }),
       });
 
       if (!response.ok) {
@@ -63,8 +72,15 @@ const AA = () => {
       const data = await response.json();
       console.log("Drivers data received:", data);
       setAvailableDrivers(data.drivers || []);
-
-      navigation.navigate("AvailableAmbulance", { drivers: data });
+      console.log("loco :", mylocation);
+      console.log("distance total :", data.totaldistance);
+      console.log("des loco :", destination);
+      navigation.navigate("AvailableAmbulance", {
+        drivers: data,
+        mylocation: mylocation,
+        destination: destination,
+        totaldistance: data.totaldistance,
+      });
     } catch (error) {
       console.error("Error fetching drivers:", error);
       Alert.alert(
@@ -77,14 +93,22 @@ const AA = () => {
   // Request Location Permission and Fetch Location
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
+    console.log("Location permission status:", status); // Log permission status
+
     if (status === "granted") {
-      const location = await Location.getCurrentPositionAsync({});
-      setMylocation(
-        `Lat: ${location.coords.latitude}, Lng: ${location.coords.longitude}`
-      );
-      setCoordinates(
-        `${location.coords.latitude}, ${location.coords.longitude}`
-      );
+      try {
+        const location = await Location.getCurrentPositionAsync({});
+        setMylocation(
+          `Lat: ${location.coords.latitude}, Lng: ${location.coords.longitude}`
+        );
+        setCoordinates(
+          `${location.coords.latitude}, ${location.coords.longitude}`
+        );
+        console.log("Location updated:", location.coords); // Log actual location
+      } catch (error) {
+        console.error("Error getting location:", error); // Log any errors
+        Alert.alert("Error", "Unable to fetch location.");
+      }
     } else {
       Alert.alert("Permission Denied", "Location permission is required.");
     }
@@ -96,10 +120,15 @@ const AA = () => {
 
   const handleMapMessage = (event) => {
     const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
-    setDestination(`${latitude}, ${longitude}`);
-    setShowMap(false);
-  };
 
+    if (locationtype === "myLocation") {
+      setMylocation(`${latitude}, ${longitude}`);
+      setCoordinates(`${latitude}, ${longitude}`);
+    } else if (locationtype === "destination") {
+      setDestination(`${latitude}, ${longitude}`);
+    }
+    setShowMap(false); // Close the map once location is updated
+  };
   const mapHtml = `<!DOCTYPE html>
 <html>
   <head>
@@ -172,13 +201,19 @@ const AA = () => {
       <View style={styles.container}>
         <Text style={styles.header}>Select your location</Text>
 
-        <TouchableOpacity onPress={() => setShowMap(true)}>
+        <TouchableOpacity
+          onPress={() => {
+            setLocationtype("myLocation");
+            setShowMap(true);
+          }}
+        >
           <View style={styles.input}>
             <Text>My Location :{mylocation}</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
+            setLocationtype("destination");
             setShowMap(true);
           }}
         >

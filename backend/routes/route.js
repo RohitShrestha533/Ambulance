@@ -15,6 +15,7 @@ import {
   hospitalData,
   approveHospital,
 } from "../controllers/hospitalController.js";
+import { getAllBookings } from "../controllers/bookingcontroller.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
 const router = express.Router();
 
@@ -25,6 +26,8 @@ router.post("/driverLogin", driverLogin);
 router.post("/driverLogout", driverLogout);
 router.get("/DriverData", driverJWT, DriverData);
 router.put("/UpdateDriver", driverJWT, UpdateDriver);
+
+router.get("/getAllBookings", driverJWT, getAllBookings);
 
 router.post("/api/hospitals/approve/:hospitalId", approveHospital);
 router.get("/api/getUnverifiedHospitals", getUnverifiedHospitals);

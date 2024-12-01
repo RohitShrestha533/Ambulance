@@ -7,12 +7,14 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Platform,
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview"; // Import WebView to display the map
 import DriverProfile from "./DriverProfile";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Tab = createBottomTabNavigator();
 
 const DD = () => {
