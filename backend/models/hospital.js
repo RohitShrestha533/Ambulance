@@ -14,6 +14,7 @@ const hospitalSchema = new mongoose.Schema(
     operatingHours: { type: String },
     emergencyContact: { type: Number, unique: true },
     drivers: [{ type: mongoose.Schema.Types.ObjectId, ref: "Driver" }],
+    ambulances: [{ type: mongoose.Schema.Types.ObjectId, ref: "Ambulance" }],
     approved: { type: String },
     lastLogin: {
       type: Date,
@@ -24,9 +25,9 @@ const hospitalSchema = new mongoose.Schema(
       default: false,
     },
     location: {
-      type: { type: String, enum: ['Point'], required: true },
+      type: { type: String, enum: ["Point"], required: true },
       coordinates: {
-        type: [Number], 
+        type: [Number],
         required: true,
       },
     },

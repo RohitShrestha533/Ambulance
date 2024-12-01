@@ -14,7 +14,7 @@ import { WebView } from "react-native-webview";
 import axios from "axios";
 import Login from "./Login";
 const RegisterHospital = () => {
-  // let ip = "172.30.13.177";
+  // let ip = "192.168.218.106";
   let ip = "192.168.100.9";
   const [hospitalName, setHospitalName] = useState("");
   const [registrationNumber, setRegistrationNumber] = useState("");
@@ -30,12 +30,11 @@ const RegisterHospital = () => {
   const [coordinates, setCoordinates] = useState([27.1, 84]);
   const [showMap, setShowMap] = useState(false);
 
-const handleMapMessage = (event) => {
-  const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
-  setCoordinates([latitude, longitude]); 
-  setShowMap(false);
-};
-
+  const handleMapMessage = (event) => {
+    const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
+    setCoordinates([latitude, longitude]);
+    setShowMap(false);
+  };
 
   const mapHtml = `<!DOCTYPE html>
 <html>
@@ -147,7 +146,8 @@ const handleMapMessage = (event) => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-    ><ScrollView contentContainerStyle={styles.scrollContainer}>
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.header}>Register Hospital</Text>
 
         <TextInput
@@ -178,10 +178,11 @@ const handleMapMessage = (event) => {
           }}
           style={{ zIndex: 5 }}
         >
-   
-            <Text style={[styles.input, { zIndex: 2 }]}>
-    {coordinates ? `Longitude: ${coordinates[0]}, Latitude: ${coordinates[1]}` : "Select coordinates"}
-  </Text>
+          <Text style={[styles.input, { zIndex: 2 }]}>
+            {coordinates
+              ? `Longitude: ${coordinates[0]}, Latitude: ${coordinates[1]}`
+              : "Select coordinates"}
+          </Text>
         </TouchableOpacity>
         {showMap && (
           <View style={{ flex: 1, height: 500 }}>
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    minHeight: Platform.OS === 'web' ? '100vh' : 'auto',
+    minHeight: Platform.OS === "web" ? "100vh" : "auto",
   },
   scrollContainer: {
     flexGrow: 1, // Ensures the scrollview takes up all available space

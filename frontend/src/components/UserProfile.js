@@ -23,7 +23,7 @@ const SectionlistToDisplay = [
   },
 ];
 
-// let ip = "172.30.13.177";
+// let ip = "192.168.218.106";
 let ip = "192.168.100.9";
 
 const Item = ({ name, navigation }) => {

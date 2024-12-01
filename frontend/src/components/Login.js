@@ -26,7 +26,7 @@ const Login = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   let ip = "192.168.100.9";
-  // let ip = "172.30.13.177";
+  // let ip = "192.168.218.106";
 
   async function UserLoginHandel() {
     if (!role) {

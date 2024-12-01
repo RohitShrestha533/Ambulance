@@ -14,6 +14,7 @@ import Main from "./src/components/Main";
 import PrivacyPolicy from "./src/components/PrivacyPolicy";
 import TermsAndConditions from "./src/components/TermsAndConditions";
 import Policies from "./src/components/Policies";
+import AvailableAmbulance from "./src/components/AvailableAmbulance";
 
 import DriverProfile from "./src/drivercomponents/DriverProfile";
 import DriverAccount from "./src/drivercomponents/DriverAccount";
@@ -44,6 +45,10 @@ export default function App() {
         <Stack.Screen name="Test" component={Test} />
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="Main" component={Main} />
+        <Stack.Screen
+          name="AvailableAmbulance"
+          component={AvailableAmbulance}
+        />
         <Stack.Screen
           name="UserProfile"
           component={UserProfile}

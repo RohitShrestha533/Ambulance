@@ -1,28 +1,102 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
+  Platform,
   TouchableOpacity,
-  TextInput,
+  StyleSheet,
   Alert,
 } from "react-native";
+import * as Location from "expo-location";
+import { useNavigation } from "@react-navigation/native";
+import { WebView } from "react-native-webview";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { WebView } from "react-native-webview"; // Import WebView to display the map
-import UserProfile from "./UserProfile";
-
+import UserProfile from "./UserProfile"; // Assuming you have a UserProfile component
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Tab = createBottomTabNavigator();
+// let ip = "192.168.218.106";
+let ip = "192.168.100.9";
 
 const AA = () => {
-  const [mylocation, setMylocation] = useState("");
-  const [coordinates, setCoordinates] = useState("27.1, 84");
+  const navigation = useNavigation();
+  const [mylocation, setMylocation] = useState("Fetching location...");
+  const [coordinates, setCoordinates] = useState("");
+  const [destination, setDestination] = useState("");
   const [showMap, setShowMap] = useState(false);
+  const [availableDrivers, setAvailableDrivers] = useState([]);
+
+  const fetchAvailableDrivers = async () => {
+    if (!destination) {
+      Alert.alert("Error", "Please select a destination.");
+      return;
+    }
+
+    try {
+      const [lat, lng] = coordinates.split(",").map(parseFloat);
+      const token =
+        Platform.OS === "web"
+          ? localStorage.getItem("token")
+          : await AsyncStorage.getItem("token");
+
+      if (!token) {
+        throw new Error("No token found, please login again");
+      }
+
+      console.log(`Fetching drivers near: Latitude ${lat}, Longitude ${lng}`);
+
+      const response = await fetch(`http://${ip}:5000/drivers-nearby`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ latitude: lat, longitude: lng }),
+      });
+
+      if (!response.ok) {
+        console.error(`HTTP Error: ${response.status}`);
+        throw new Error("Failed to fetch drivers");
+      }
+
+      const data = await response.json();
+      console.log("Drivers data received:", data);
+      setAvailableDrivers(data.drivers || []);
+
+      navigation.navigate("AvailableAmbulance", { drivers: data });
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+      Alert.alert(
+        "Error",
+        error.message || "Unable to fetch drivers. Please try again."
+      );
+    }
+  };
+
+  // Request Location Permission and Fetch Location
+  const requestLocationPermission = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === "granted") {
+      const location = await Location.getCurrentPositionAsync({});
+      setMylocation(
+        `Lat: ${location.coords.latitude}, Lng: ${location.coords.longitude}`
+      );
+      setCoordinates(
+        `${location.coords.latitude}, ${location.coords.longitude}`
+      );
+    } else {
+      Alert.alert("Permission Denied", "Location permission is required.");
+    }
+  };
+
+  useEffect(() => {
+    requestLocationPermission(); // Request permission and fetch location
+  }, []);
 
   const handleMapMessage = (event) => {
     const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
-    setCoordinates(`${latitude}, ${longitude}`);
+    setDestination(`${latitude}, ${longitude}`);
     setShowMap(false);
   };
 
@@ -44,12 +118,21 @@ const AA = () => {
     <div id="map"></div>
     <script>
       const map = L.map('map').setView([27.1, 84], 13); // Default coordinates
-
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
 
-      const marker = L.marker([27.1, 84]).addTo(map); // Initial marker
+      let marker = null;
+
+      // Function to update the marker on the map
+      function updateMarker(lat, lng) {
+        if (marker) {
+          marker.setLatLng([lat, lng]);
+        } else {
+          marker = L.marker([lat, lng]).addTo(map);
+        }
+        map.setView([lat, lng], 15);
+      }
 
       // Add search control for places
       const geocoder = L.Control.Geocoder.nominatim();
@@ -62,7 +145,7 @@ const AA = () => {
       // Listen for search results
       map.on('geocoding', function(event) {
         const { lat, lng } = event.latlng;
-        marker.setLatLng([lat, lng]); // Move marker to searched location
+        updateMarker(lat, lng);
         window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: lat, longitude: lng })); // Send to React Native
       });
 
@@ -70,45 +153,39 @@ const AA = () => {
       map.on('click', function(e) {
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
-        marker.setLatLng([lat, lng]);
+        updateMarker(lat, lng);
         window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: lat, longitude: lng }));
+      });
+
+      // Listen for messages from React Native
+      window.addEventListener('message', function(event) {
+        const { latitude, longitude } = JSON.parse(event.data);
+        updateMarker(latitude, longitude);
       });
     </script>
   </body>
-</html>
-`;
+</html>`;
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.header}>Welcome to the Home Page</Text>
+      <Text style={styles.header}>Welcome to the Page</Text>
       <View style={styles.container}>
         <Text style={styles.header}>Select your location</Text>
 
+        <TouchableOpacity onPress={() => setShowMap(true)}>
+          <View style={styles.input}>
+            <Text>My Location :{mylocation}</Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            console.log("Setting showMap to true");
-            console.log("showMap value:", showMap);
             setShowMap(true);
           }}
         >
           <View style={styles.input}>
-            <Text>{mylocation}</Text>
+            <Text>Destination {destination}</Text>
           </View>
         </TouchableOpacity>
-
-        {/*  Latitude and Longitude of Destination location*/}
-        <TouchableOpacity
-          onPress={() => {
-            console.log("Setting showMap to true");
-            console.log("showMap value:", showMap);
-            setShowMap(true);
-          }}
-        >
-          <View style={styles.input}>
-            <Text>{coordinates}</Text>
-          </View>
-        </TouchableOpacity>
-
         {showMap && (
           <View style={{ flex: 1, height: 600 }}>
             <WebView
@@ -116,15 +193,20 @@ const AA = () => {
               source={{ html: mapHtml }}
               javaScriptEnabled={true}
               onMessage={handleMapMessage}
+              injectedJavaScript={
+                coordinates
+                  ? `window.postMessage('${JSON.stringify({
+                      latitude: parseFloat(coordinates.split(",")[0]),
+                      longitude: parseFloat(coordinates.split(",")[1]),
+                    })}', '*');`
+                  : ""
+              }
               style={{ flex: 1 }}
             />
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => Alert.alert("Registered", coordinates)}
-        >
+        <TouchableOpacity style={styles.button} onPress={fetchAvailableDrivers}>
           <Text style={styles.buttonText}>Search Ambulance</Text>
         </TouchableOpacity>
       </View>
@@ -179,50 +261,16 @@ const Main = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   scrollContainer: {
     padding: 20,
     marginBottom: 100,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   header: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-  },
-  card: {
-    padding: 20,
-    marginVertical: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-  },
-  tabBar: {
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
-    height: 90,
-    paddingTop: 10,
-    position: "absolute",
-    bottom: 0,
-  },
-  sosButton: {
-    position: "absolute",
-    bottom: 45,
-    alignSelf: "center",
-    backgroundColor: "red",
-    width: 70,
-    height: 70,
-    borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 5,
-    zIndex: 10,
   },
   input: {
     height: 40,
@@ -241,6 +289,40 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 16,
+  },
+  sosButton: {
+    position: "absolute",
+    bottom: 45,
+    alignSelf: "center",
+    backgroundColor: "red",
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    zIndex: 10,
+  },
+  tabBar: {
+    backgroundColor: "#fff",
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+    height: 90,
+    paddingTop: 10,
+    position: "absolute",
+    bottom: 0,
+  },
+  driverItem: {
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  driverText: {
+    fontSize: 16,
+    marginBottom: 5,
   },
 });
 

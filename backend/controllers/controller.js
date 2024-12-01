@@ -1,8 +1,9 @@
 import bcrypt from "bcrypt";
 const saltRounds = 10;
 import jwt from "jsonwebtoken";
-
+import { Driver } from "../models/driver.js";
 import { User } from "../models/user.js";
+import Ambulance from "../models/Ambulance.js";
 //register
 export const userRegister = async (req, res) => {
   const { email, phone, password, confirmpassword } = req.body;
@@ -128,3 +129,92 @@ export const UpdateUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const driversnearby = async (req, res) => {
+  const { latitude, longitude, radius = 50 } = req.body;
+
+  if (!latitude || !longitude) {
+    return res
+      .status(400)
+      .json({ message: "Latitude and Longitude are required" });
+  }
+
+  const radiusInMeters = radius * 1000;
+
+  try {
+    const ambulances = await Ambulance.aggregate([
+      {
+        $geoNear: {
+          near: { type: "Point", coordinates: [latitude, longitude] },
+          distanceField: "distance",
+          maxDistance: radiusInMeters,
+          spherical: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "drivers", // Look up the driver details
+          localField: "driver", // Field in Ambulance schema
+          foreignField: "_id", // Match to the driver collection's _id
+          as: "driverDetails", // Alias for the driver details
+        },
+      },
+      {
+        $unwind: {
+          path: "$driverDetails", // Unwind driverDetails to make it a single object
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $limit: 100,
+      },
+    ]);
+
+    res.status(200).json({ ambulances });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching ambulances", error });
+  }
+};
+
+// export const driversNearby = async (req, res) => {
+//   const { latitude, longitude, radius = 50 } = req.body; // default radius = 50 km
+//   const userId = req.user.userId;
+
+//   try {
+//     if (userId) {
+//       if (!latitude || !longitude) {
+//         return res
+//           .status(400)
+//           .json({ message: "Latitude and longitude are required" });
+//       }
+
+//       const radiusInMeters = radius * 1000;
+
+//       const drivers = await Driver.aggregate([
+//         {
+//           $geoNear: {
+//             near: {
+//               type: "Point",
+//               coordinates: [longitude, latitude], // User's location [longitude, latitude]
+//             },
+//             distanceField: "distance", // Store the calculated distance in the `distance` field
+//             maxDistance: radiusInMeters, // Maximum distance in meters
+//             spherical: true, // Use spherical geometry to calculate the distance
+//           },
+//         },
+//         {
+//           $limit: 100, // Limit to 100 drivers (you can change this number)
+//         },
+//       ]);
+
+//       // Send the response with the nearby drivers
+//       res.status(200).json({ drivers });
+//     } else {
+//       res.status(500).json({ message: "No user token", error });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Error fetching drivers", error });
+//   }
+// };

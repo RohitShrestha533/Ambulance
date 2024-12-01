@@ -2,8 +2,9 @@ import bcrypt from "bcrypt";
 const saltRounds = 10;
 import { Driver } from "../models/driver.js";
 import { Hospital } from "../models/hospital.js";
+import Ambulance from "../models/Ambulance.js";
 import jwt from "jsonwebtoken";
-
+import mongoose from "mongoose";
 export const driverJWT = (req, res, next) => {
   const token =
     req.headers["authorization"]?.split(" ")[1] || req.cookies.drivertoken;
@@ -38,14 +39,15 @@ export const driverRegister = async (req, res) => {
   if (!phoneRegex.test(phone)) {
     return res.status(400).send({ message: "Phone number must be 10 digits." });
   }
+  const session = await mongoose.startSession(); // Start a session for the transaction
 
   try {
+    session.startTransaction();
     const hospitalId = req.hospital?.hospitalId;
     if (!hospitalId) {
       return res.status(400).send({ message: "Hospital ID is missing." });
     }
 
-    // Find the hospital
     const hospital = await Hospital.findById(hospitalId);
     if (!hospital) {
       return res.status(404).send({ message: "Hospital not found." });
@@ -70,28 +72,47 @@ export const driverRegister = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-
     const location = hospital.location;
-    const newDriver = await Driver.create({
-      driverName,
+
+    const newAmbulance = await Ambulance.create({
       ambulanceNumber,
-      licenseNumber,
-      phone,
       ambulanceType,
-      email,
-      password: hashedPassword,
-      hospitalName: hospital.hospitalName,
       hospital: hospitalId,
       location: {
         type: "Point", // Geospatial type
         coordinates: location.coordinates, // Use the hospital's coordinates
       },
     });
+
+    const newDriver = await Driver.create({
+      driverName,
+      ambulanceNumber,
+      licenseNumber,
+      phone,
+      email,
+      password: hashedPassword,
+      hospitalName: hospital.hospitalName,
+      hospital: hospitalId,
+      location: {
+        type: "Point",
+        coordinates: location.coordinates,
+      },
+      ambulance: newAmbulance._id,
+    });
+    newAmbulance.driver = newDriver._id;
+    await newAmbulance.save();
+
+    hospital.ambulances.push(newAmbulance._id);
+    await hospital.save();
+
     hospital.drivers.push(newDriver._id);
     await hospital.save();
-    res
-      .status(201)
-      .send({ status: "ok", data: "Driver registered successfully." });
+
+    await session.commitTransaction();
+    res.status(201).send({
+      status: "ok",
+      data: "Driver and ambulance registered successfully.",
+    });
   } catch (error) {
     console.error("Error during driver registration:", error.message);
     res

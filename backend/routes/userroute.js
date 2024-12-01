@@ -5,10 +5,12 @@ import {
   userRegister,
   UserData,
   UpdateUser,
+  driversnearby,
 } from "../controllers/controller.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
-
 const router = express.Router();
+
+router.post("/drivers-nearby", authenticateJWT, driversnearby);
 
 router.post("/userRegister", userRegister);
 router.post("/userLogin", userLogin);
