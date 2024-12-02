@@ -27,7 +27,7 @@ router.post("/driverLogout", driverLogout);
 router.get("/DriverData", driverJWT, DriverData);
 router.put("/UpdateDriver", driverJWT, UpdateDriver);
 
-router.get("/getAllBookings", driverJWT, getAllBookings);
+router.get("/api/getAllBookings", driverJWT, getAllBookings);
 
 router.post("/api/hospitals/approve/:hospitalId", approveHospital);
 router.get("/api/getUnverifiedHospitals", getUnverifiedHospitals);

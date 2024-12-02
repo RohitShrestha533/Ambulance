@@ -102,7 +102,15 @@ export const getAllBookings = async (req, res) => {
   try {
     const driverId = req.driver.driverId;
 
-    const bookings = await Booking.find({ driver: driverId }).populate("user"); // Populate user info if needed
+    const bookings = await Booking.find({ driverId: driverId }).select(
+      " userlocation destinationlocation price bookingstatus"
+    );
+
+    if (!bookings || bookings.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No bookings found for this driver" });
+    }
 
     res.status(200).json(bookings);
   } catch (error) {

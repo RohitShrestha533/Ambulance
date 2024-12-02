@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
+  FlatList,
   TouchableOpacity,
+  ActivityIndicator,
   TextInput,
   Alert,
   Platform,
@@ -17,119 +19,10 @@ import DriverProfile from "./DriverProfile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const Tab = createBottomTabNavigator();
 
-const DD = () => {
-  const [mylocation, setMylocation] = useState("");
-  const [coordinates, setCoordinates] = useState("27.1, 84");
-  const [showMap, setShowMap] = useState(false);
-
-  const handleMapMessage = (event) => {
-    const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
-    setCoordinates(`${latitude}, ${longitude}`);
-    setShowMap(false);
-  };
-
-  const mapHtml = `<!DOCTYPE html>
-<html>
-  <head>
-    <title>Leaflet Map with Search</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-    <style>
-      body { margin: 0; padding: 0; }
-      #map { height: 100vh; }
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script>
-      const map = L.map('map').setView([27.1, 84], 13); // Default coordinates
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(map);
-
-      const marker = L.marker([27.1, 84]).addTo(map); // Initial marker
-
-      // Add search control for places
-      const geocoder = L.Control.Geocoder.nominatim();
-      L.Control.geocoder({
-        collapsed: false,
-        placeholder: "Search for a place",
-        geocoder: geocoder
-      }).addTo(map);
-
-      // Listen for search results
-      map.on('geocoding', function(event) {
-        const { lat, lng } = event.latlng;
-        marker.setLatLng([lat, lng]); // Move marker to searched location
-        window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: lat, longitude: lng })); // Send to React Native
-      });
-
-      // Click on the map to update coordinates
-      map.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-        marker.setLatLng([lat, lng]);
-        window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: lat, longitude: lng }));
-      });
-    </script>
-  </body>
-</html>
-`;
-
+const DriverBookingsScreen = () => {
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.header}>Welcome to the Driver Home Page</Text>
-      <View style={styles.container}>
-        <Text style={styles.header}>Select your location</Text>
-
-        <TouchableOpacity
-          onPress={() => {
-            console.log("Setting showMap to true");
-            console.log("showMap value:", showMap);
-            setShowMap(true);
-          }}
-        >
-          <View style={styles.input}>
-            <Text>{mylocation}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/*  Latitude and Longitude of Destination location*/}
-        <TouchableOpacity
-          onPress={() => {
-            console.log("Setting showMap to true");
-            console.log("showMap value:", showMap);
-            setShowMap(true);
-          }}
-        >
-          <View style={styles.input}>
-            <Text>{coordinates}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {showMap && (
-          <View style={{ flex: 1, height: 600 }}>
-            <WebView
-              originWhitelist={["*"]}
-              source={{ html: mapHtml }}
-              javaScriptEnabled={true}
-              onMessage={handleMapMessage}
-              style={{ flex: 1 }}
-            />
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => Alert.alert("Registered", coordinates)}
-        >
-          <Text style={styles.buttonText}>Search Ambulance</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={styles.header}>Welcome to the Page</Text>
     </ScrollView>
   );
 };
@@ -151,7 +44,7 @@ const DriverMain = () => {
       >
         <Tab.Screen
           name="DriverHome"
-          component={DD}
+          component={DriverBookingsScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="home" size={size} color={color} />
@@ -243,6 +136,29 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     fontSize: 16,
+  },
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: "#fff",
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  bookingItem: {
+    marginBottom: 12,
+    padding: 16,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    borderColor: "#ddd",
+    borderWidth: 1,
+  },
+  bookingTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
   },
 });
 

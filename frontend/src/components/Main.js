@@ -70,11 +70,11 @@ const AA = () => {
       }
 
       const data = await response.json();
-      console.log("Drivers data received:", data);
+      // console.log("Drivers data received:", data);
       setAvailableDrivers(data.drivers || []);
-      console.log("loco :", mylocation);
+      // console.log("loco :", mylocation);
       console.log("distance total :", data.totaldistance);
-      console.log("des loco :", destination);
+      // console.log("des loco :", destination);
       navigation.navigate("AvailableAmbulance", {
         drivers: data,
         mylocation: mylocation,

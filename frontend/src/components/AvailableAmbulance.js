@@ -12,7 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AvailableAmbulance = ({ route }) => {
   const { drivers, mylocation, destination, totaldistance } = route.params; // Destructure drivers from route params
-  console.log("Available ambulances:", drivers);
+  // console.log("Available ambulances:", drivers);
   console.log("UserLocation:", mylocation);
   console.log("DestinationLocation:", destination);
   // let ip = "192.168.218.106";
