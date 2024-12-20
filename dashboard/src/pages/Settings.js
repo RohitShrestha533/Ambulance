@@ -55,7 +55,7 @@ const Settings = () => {
         console.error("Error fetching admin data:", error);
         setError(error.message);
         setAdminData(null);
-        if (error.response?.status === 401) {
+        if (error.response?.status === 200) {
           navigate("/login"); // Corrected navigation
         }
       }

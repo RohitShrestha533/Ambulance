@@ -10,22 +10,22 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const History = ({ userId }) => {
+const DriverScreen = () => {
   const [bookingHistory, setBookingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  let ip = "192.168.18.12"; // Your backend IP address
+  let ip = "192.168.18.12";
 
   const fetchBookingHistory = async () => {
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("drivertoken");
       if (!token) {
         Alert.alert("Error", "No token found, please login again");
         setLoading(false);
         return;
       }
 
-      const response = await fetch(`http://${ip}:5000/userbookingHistory`, {
+      const response = await fetch(`http://${ip}:5000/driverbookingHistory`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -49,13 +49,13 @@ const History = ({ userId }) => {
 
   const handleCancel = async (bookingId) => {
     try {
-      const token = await AsyncStorage.getItem("token");
+      const token = await AsyncStorage.getItem("drivertoken");
       if (!token) {
         Alert.alert("Error", "No token found, please login again");
         return;
       }
 
-      const response = await fetch(`http://${ip}:5000/cancelBooking`, {
+      const response = await fetch(`http://${ip}:5000/drivercancelBooking`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -77,6 +77,36 @@ const History = ({ userId }) => {
       Alert.alert("Error", "Failed to cancel booking");
     }
   };
+  const handleConfirm = async (bookingId) => {
+    try {
+      const token = await AsyncStorage.getItem("drivertoken");
+      if (!token) {
+        Alert.alert("Error", "No token found, please login again");
+        return;
+      }
+
+      const response = await fetch(`http://${ip}:5000/confirmBooking`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ bookingId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to confirm the booking");
+      }
+
+      const data = await response.json();
+      Alert.alert("Success", data.message);
+
+      fetchBookingHistory();
+    } catch (error) {
+      console.error("Error confirming booking:", error);
+      Alert.alert("Error", "Failed to confirm booking");
+    }
+  };
 
   if (loading) {
     return (
@@ -94,10 +124,8 @@ const History = ({ userId }) => {
   const renderBookingCard = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.header}>Booking Details</Text>
-      <Text style={styles.text}>Ambulance Type: {item.ambulanceType}</Text>
-      <Text style={styles.text}>Ambulance Number: {item.ambulanceNumber}</Text>
-      <Text style={styles.text}>Driver Name: {item.driverId?.fullname}</Text>
-      <Text style={styles.text}>Driver Phone: {item.driverId?.phone}</Text>
+      <Text style={styles.text}>User Name: {item.userId?.fullname}</Text>
+      <Text style={styles.text}>User Phone: {item.userId?.phone}</Text>
       <Text style={styles.text}>
         Booking Date: {new Date(item.createdAt).toLocaleString()}
       </Text>
@@ -106,14 +134,18 @@ const History = ({ userId }) => {
       </Text>
       <Text style={styles.text}>Price: Rs {item.price.toFixed(2)}</Text>
       <Text style={styles.text}>Status: {item.bookingstatus}</Text>
-
-      {/* Show cancel button if booking status is pending */}
+      <TouchableOpacity
+        style={styles.confirmButton}
+        onPress={() => handleConfirm(item._id)}
+      >
+        <Text style={styles.ButtonText}>Confirm</Text>
+      </TouchableOpacity>
       {item.bookingstatus === "pending" && (
         <TouchableOpacity
           style={styles.cancelButton}
           onPress={() => handleCancel(item._id)}
         >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+          <Text style={styles.ButtonText}>Cancel</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -123,6 +155,7 @@ const History = ({ userId }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>Welcome to the Page</Text>
       {bookingHistory.length === 0 ? (
         <Text style={styles.noHistoryText}>No booking history found.</Text>
       ) : (
@@ -142,6 +175,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    marginBottom: 90,
   },
   listContent: {
     padding: 16,
@@ -159,6 +193,7 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
+    textAlign: "center",
     fontWeight: "bold",
     marginBottom: 20,
     color: "black",
@@ -185,11 +220,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
   },
-  cancelButtonText: {
+  confirmButton: {
+    marginTop: 10,
+    padding: 10,
+    backgroundColor: "#4CAF50",
+    borderRadius: 5,
+    alignItems: "center",
+  },
+  ButtonText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
   },
 });
 
-export default History;
+export default DriverScreen;

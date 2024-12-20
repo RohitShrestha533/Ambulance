@@ -5,8 +5,6 @@ import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DriverForm from "../components/DriverForm";
 import Settings from "./Settings";
-import { useState } from "react";
-// Placeholder components for other sections
 const DashboardHome = () => <h1>Dashboard Home</h1>;
 const DriverDetail = () => <h1>Driver Detail Management</h1>;
 

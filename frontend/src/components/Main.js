@@ -16,10 +16,11 @@ import { Ionicons } from "@expo/vector-icons";
 import UserProfile from "./UserProfile"; // Assuming you have a UserProfile component
 import AsyncStorage from "@react-native-async-storage/async-storage";
 const Tab = createBottomTabNavigator();
-// let ip = "192.168.218.106";
-let ip = "192.168.100.9";
 
 const AA = () => {
+  // let ip = "192.168.218.106";
+  let ip = "192.168.18.12";
+
   const navigation = useNavigation();
   const [mylocation, setMylocation] = useState("Fetching location...");
   const [coordinates, setCoordinates] = useState("");
@@ -74,7 +75,7 @@ const AA = () => {
       setAvailableDrivers(data.drivers || []);
       // console.log("loco :", mylocation);
       console.log("distance total :", data.totaldistance);
-      // console.log("des loco :", destination);
+      console.log("des loco :", destination);
       navigation.navigate("AvailableAmbulance", {
         drivers: data,
         mylocation: mylocation,

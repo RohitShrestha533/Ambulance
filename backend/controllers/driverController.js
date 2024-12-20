@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 const saltRounds = 10;
 import { Driver } from "../models/driver.js";
 import { Hospital } from "../models/hospital.js";
+import { Booking } from "../models/Booking.js";
 import Ambulance from "../models/Ambulance.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
@@ -202,5 +203,71 @@ export const UpdateDriver = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const driverbookingHistory = async (req, res) => {
+  try {
+    const driverId = req.driver.driverId;
+    console.log("Fetching bookings for driver ID:", driverId);
+
+    const bookings = await Booking.find({ driverId, bookingstatus: "pending" })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "userId",
+        select: "fullname phone",
+      });
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching booking history:", error);
+    res.status(500).json({ message: "Failed to fetch booking history" });
+  }
+};
+
+export const drivercancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.bookingstatus !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending bookings can be cancelled" });
+    }
+
+    booking.bookingstatus = "cancelled"; // or "cancelled"
+    await booking.save();
+
+    res.json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to cancel booking" });
+  }
+};
+
+export const confirmBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.bookingstatus !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending bookings can be confirmed" });
+    }
+
+    booking.bookingstatus = "confirmed"; // or "cancelled"
+    await booking.save();
+
+    res.json({ message: "Booking confirmed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to confirm booking" });
   }
 };

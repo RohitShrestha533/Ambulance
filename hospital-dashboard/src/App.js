@@ -9,7 +9,7 @@ import LoginPage from "./components/LoginPage";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 function App() {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("hospitaltoken");
   return (
     <Router>
       <Routes>

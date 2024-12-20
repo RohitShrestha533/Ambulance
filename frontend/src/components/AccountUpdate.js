@@ -26,7 +26,7 @@ const AccountUpdate = () => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   // let ip = "192.168.218.106";
-  let ip = "192.168.100.9";
+  let ip = "192.168.18.12";
 
   useEffect(() => {
     const fetchUserData = async () => {

@@ -15,23 +15,14 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview"; // Import WebView to display the map
 import DriverProfile from "./DriverProfile";
-
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import DriverScreen from "./DriverScreen";
 const Tab = createBottomTabNavigator();
 
-const DriverBookingsScreen = () => {
-  return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.header}>Welcome to the Page</Text>
-    </ScrollView>
-  );
-};
-
-const SOSButton = ({ onPress }) => (
-  <TouchableOpacity style={styles.sosButton} onPress={onPress}>
-    <Text style={{ color: "white" }}>SOS</Text>
-  </TouchableOpacity>
-);
+// const SOSButton = ({ onPress }) => (
+//   <TouchableOpacity style={styles.sosButton} onPress={onPress}>
+//     <Text style={{ color: "white" }}>SOS</Text>
+//   </TouchableOpacity>
+// );
 
 const DriverMain = () => {
   return (
@@ -44,7 +35,7 @@ const DriverMain = () => {
       >
         <Tab.Screen
           name="DriverHome"
-          component={DriverBookingsScreen}
+          component={DriverScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="home" size={size} color={color} />
@@ -64,12 +55,11 @@ const DriverMain = () => {
         />
       </Tab.Navigator>
 
-      {/* SOS Button */}
-      <SOSButton
+      {/* <SOSButton
         onPress={() => {
           alert("SOS Button Pressed!");
         }}
-      />
+      /> */}
     </View>
   );
 };

@@ -94,7 +94,7 @@ export const hospitalRegister = async (req, res) => {
     emergencyContact,
   } = req.body;
 
-  console.log("Received data:", req.body);
+  // console.log("Received data:", req.body);
 
   // Validation
   const phoneRegex = /^[0-9]{10}$/;
@@ -178,7 +178,7 @@ export const hospitalRegister = async (req, res) => {
 
     res.status(200).send({
       status: "ok",
-      data: "Hospital registered successfully.",
+      message: "Hospital registered successfully.",
       // hospitalId: newHospital._id,
     });
   } catch (error) {
@@ -225,7 +225,7 @@ export const hospitalLogin = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      console.log("Generated Token:", token); // Logs the token if successful
+      // console.log("Generated Token:", token); // Logs the token if successful
       res.status(200).send({
         status: 200,
         message: "Login successful",

@@ -24,7 +24,7 @@ const SectionlistToDisplay = [
 ];
 
 // let ip = "192.168.218.106";
-let ip = "192.168.100.9";
+let ip = "192.168.18.12";
 
 const Item = ({ name, navigation }) => {
   const handlePress = async () => {

@@ -12,11 +12,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AvailableAmbulance = ({ route }) => {
   const { drivers, mylocation, destination, totaldistance } = route.params; // Destructure drivers from route params
-  // console.log("Available ambulances:", drivers);
+  console.log("Available ambulances:", drivers);
   console.log("UserLocation:", mylocation);
   console.log("DestinationLocation:", destination);
   // let ip = "192.168.218.106";
-  let ip = "192.168.100.9";
+  let ip = "192.168.18.12";
   const bookAmbulance = async (
     ambulanceId,
     driverId,
@@ -58,7 +58,11 @@ const AvailableAmbulance = ({ route }) => {
         throw new Error("Failed to book ambulance");
       }
       const data = await response.json();
-      Alert.alert("Booking Requested", data);
+      console.log("Ambulance booking response:", data);
+      Alert.alert(
+        "Booking Requested",
+        `Booking successful! ID: ${data.bookingId}, Status: ${data.status}`
+      );
     } catch (error) {
       console.error("Error booking ambulance:", error);
       Alert.alert("Error", "Unable to book ambulance. Please try again.");

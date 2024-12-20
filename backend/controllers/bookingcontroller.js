@@ -12,7 +12,6 @@ export const bookambulance = async (req, res) => {
     ambulanceType,
   } = req.body;
 
-  // Validate if all fields are provided
   if (
     !ambulanceId ||
     !driverId ||
@@ -43,7 +42,6 @@ export const bookambulance = async (req, res) => {
       return null;
     }
 
-    // If it's in the "Lat: <latitude>, Lng: <longitude>" format
     const latitude = parseFloat(match[1]);
     const longitude = parseFloat(match[2]);
     return {
@@ -55,7 +53,6 @@ export const bookambulance = async (req, res) => {
   const formattedUserLocation = parseLocation(userLocation);
   const formattedDestination = parseLocation(destination);
 
-  // Log the parsed values to check if the format is correct
   console.log("Formatted User Location:", formattedUserLocation);
   console.log("Formatted Destination:", formattedDestination);
 
@@ -64,7 +61,6 @@ export const bookambulance = async (req, res) => {
   }
 
   try {
-    // Assuming req.user contains the authenticated user's ID
     const userId = req.user?.userId;
 
     if (!userId) {
@@ -73,7 +69,6 @@ export const bookambulance = async (req, res) => {
         .json({ message: "Unauthorized: User ID not found" });
     }
 
-    // Create a new booking entry
     const newBooking = new Booking({
       ambulanceId,
       driverId,
@@ -87,11 +82,13 @@ export const bookambulance = async (req, res) => {
       bookingstatus: "pending",
     });
 
-    // Save the booking
     const savedBooking = await newBooking.save();
 
-    // Send response
-    res.status(200).json(savedBooking);
+    res.status(200).json({
+      message: "Booking successful",
+      bookingId: savedBooking._id,
+      status: savedBooking.bookingstatus,
+    });
   } catch (error) {
     console.error("Error booking ambulance:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -102,9 +99,9 @@ export const getAllBookings = async (req, res) => {
   try {
     const driverId = req.driver.driverId;
 
-    const bookings = await Booking.find({ driverId: driverId }).select(
-      " userlocation destinationlocation price bookingstatus"
-    );
+    const bookings = await Booking.find({ driverId: driverId })
+      .select(" userlocation destinationlocation price bookingstatus")
+      .sort({ createdAt: -1 });
 
     if (!bookings || bookings.length === 0) {
       return res
@@ -115,5 +112,52 @@ export const getAllBookings = async (req, res) => {
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: "Error fetching bookings", error });
+  }
+};
+
+export const userbookingHistory = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    console.log("Fetching bookings for user ID:", userId);
+
+    const bookings = await Booking.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "driverId",
+        select: "fullname phone",
+      })
+      .populate({
+        path: "ambulanceId",
+        select: "ambulanceNumber",
+      });
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching booking history:", error);
+    res.status(500).json({ message: "Failed to fetch booking history" });
+  }
+};
+
+export const cancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.bookingstatus !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending bookings can be cancelled" });
+    }
+
+    booking.bookingstatus = "cancelled"; // or "cancelled"
+    await booking.save();
+
+    res.json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to cancel booking" });
   }
 };

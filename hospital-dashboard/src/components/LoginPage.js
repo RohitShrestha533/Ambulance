@@ -18,7 +18,7 @@ const LoginPage = () => {
         password,
       });
       const { status, message, token } = response.data;
-
+      console.log("token", token);
       if (status === 200) {
         localStorage.setItem("hospitaltoken", token);
         alert("Login successful");

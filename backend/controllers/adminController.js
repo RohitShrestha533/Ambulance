@@ -75,7 +75,7 @@ export const adminLogin = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      console.log("Generated Token:", token); // Logs the token if successful
+      // console.log("Generated Token:", token); // Logs the token if successful
       res.status(200).send({
         status: 200,
         message: "Login successful",

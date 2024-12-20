@@ -19,7 +19,7 @@ const Account = () => {
   const [error, setError] = useState(null);
 
   // let ip = "192.168.218.106";
-  let ip = "192.168.100.9";
+  let ip = "192.168.18.12";
 
   // Fetch user details
 

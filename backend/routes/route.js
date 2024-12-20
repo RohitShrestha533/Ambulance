@@ -6,6 +6,9 @@ import {
   driverLogout,
   DriverData,
   UpdateDriver,
+  driverbookingHistory,
+  drivercancelBooking,
+  confirmBooking,
 } from "../controllers/driverController.js";
 import {
   hospitalRegister,
@@ -27,6 +30,9 @@ router.post("/driverLogout", driverLogout);
 router.get("/DriverData", driverJWT, DriverData);
 router.put("/UpdateDriver", driverJWT, UpdateDriver);
 
+router.get("/driverbookingHistory", driverJWT, driverbookingHistory);
+router.post("/drivercancelBooking", driverJWT, drivercancelBooking);
+router.post("/confirmBooking", driverJWT, confirmBooking);
 router.get("/api/getAllBookings", driverJWT, getAllBookings);
 
 router.post("/api/hospitals/approve/:hospitalId", approveHospital);
