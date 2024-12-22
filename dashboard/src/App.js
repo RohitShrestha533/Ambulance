@@ -6,30 +6,31 @@ import {
   Navigate,
 } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-function App() {
+import Navs from "./components/Navs";
+import ProtectedRoute from "./components/ProtectedRoute";
+import "bootstrap-icons/font/bootstrap-icons.css";
+
+const App = () => {
   const token = localStorage.getItem("admintoken");
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={<Navigate to={token ? "/dashboard" : "/login"} />}
-        />
         <Route path="/login" element={<LoginPage />} />
+
         <Route
-          path="/dashboard/*"
-          element={token ? <Dashboard /> : <Navigate to="/login" />}
+          path="/navs/*"
+          element={
+            <ProtectedRoute isAuthenticated={!!token}>
+              <Navs />
+            </ProtectedRoute>
+          }
         />
-        <Route
-          path="/setting"
-          element={token ? <Settings /> : <Navigate to="/login" />}
-        />
+
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;

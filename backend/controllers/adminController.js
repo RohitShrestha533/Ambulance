@@ -4,6 +4,7 @@ const saltRounds = 10;
 import { Admin } from "../models/admin.js";
 
 import jwt from "jsonwebtoken";
+import { Booking } from "../models/Booking.js";
 
 //register
 export const adminRegister = async (req, res) => {
@@ -90,7 +91,6 @@ export const adminLogin = async (req, res) => {
 };
 
 //logout
-
 export const adminLogout = async (req, res) => {
   res.clearCookie("token");
   res.status(200).send({ message: "Logged out successfully" });
@@ -109,5 +109,87 @@ export const AdminData = async (req, res) => {
     res
       .status(500)
       .send({ message: "Error fetching admin data", error: error.message });
+  }
+};
+
+export const UpdateAdmin = async (req, res) => {
+  const adminId = req.admin.adminId;
+  const { fullname, phone, Dob, gender } = req.body;
+  try {
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      adminId,
+      { fullname, phone, Dob, gender },
+      { new: true }
+    );
+
+    if (!updatedAdmin) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Admin updated successfully",
+      admin: updatedAdmin,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+export const revenuechart = async (req, res) => {
+  console.log("backedn");
+  try {
+    const revenueData = await Booking.aggregate([
+      {
+        $match: {
+          bookingstatus: "pending", // Filter bookings that are confirmed
+        },
+      },
+      {
+        $lookup: {
+          from: "drivers", // Lookup to get driver details
+          localField: "driverId", // The driverId in the booking
+          foreignField: "_id", // The _id in the driver collection
+          as: "driverDetails", // The resulting driver details will be placed in the "driverDetails" array
+        },
+      },
+      {
+        $unwind: "$driverDetails", // Unwind the driverDetails array to get a single driver object
+      },
+      {
+        $group: {
+          _id: "$driverDetails.hospital", // Group by the hospitalId of the driver
+          totalPrice: { $sum: "$price" }, // Sum the price of all confirmed bookings for each hospital
+        },
+      },
+      {
+        $lookup: {
+          from: "hospitals", // Lookup to get hospital details
+          localField: "_id", // The hospitalId from the driver collection
+          foreignField: "_id", // The _id in the hospital collection
+          as: "hospitalDetails", // The resulting hospital details will be placed in the "hospitalDetails" array
+        },
+      },
+      {
+        $unwind: "$hospitalDetails", // Unwind the hospitalDetails array to get a single hospital object
+      },
+      {
+        $project: {
+          hospitalName: "$hospitalDetails.hospitalName", // Ensure this field exists in your hospitals collection
+          totalPrice: 1, // Include the total price in the result
+        },
+      },
+    ]);
+
+    // Return the result as a response
+    res.status(200).json(revenueData);
+  } catch (err) {
+    // Handle any errors
+    console.error("Error fetching revenue data:", err);
+    res
+      .status(500)
+      .json({ message: "Error fetching revenue data", error: err });
   }
 };

@@ -1,28 +1,17 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Paper,
-  Typography,
-} from "@mui/material";
-import axios from "axios"; // Make sure axios is imported
-import { useNavigate } from "react-router-dom"; // Make sure useNavigate is imported
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const [adminData, setAdminData] = useState(null);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // Initialize navigate
+  const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
         const token = localStorage.getItem("admintoken");
-        console.log("Fetching user data...", token);
 
         if (!token) {
           throw new Error("No token found, please login again");
@@ -37,8 +26,6 @@ const Settings = () => {
             withCredentials: true,
           }
         );
-
-        console.log("Response from server:", response.data);
 
         if (response.data?.admin) {
           const admin = response.data.admin;
@@ -55,8 +42,9 @@ const Settings = () => {
         console.error("Error fetching admin data:", error);
         setError(error.message);
         setAdminData(null);
-        if (error.response?.status === 200) {
-          navigate("/login"); // Corrected navigation
+
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          navigate("/login");
         }
       }
     };
@@ -64,54 +52,137 @@ const Settings = () => {
     fetchAdminData();
   }, [navigate]);
 
-  // Render loading or error state if needed
-  if (!adminData) {
-    return (
-      <Typography variant="h6" sx={{ padding: 2 }}>
-        {error ? `Error: ${error}` : "Loading..."}
-      </Typography>
-    );
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setAdminData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("admintoken");
+      if (!token) {
+        throw new Error("No token found, please login again");
+      }
+      const response = await axios.put(
+        "http://localhost:5000/admin/UpdateAdmin",
+        adminData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Admin data updated successfully");
+        setIsEditing(false); // Exit editing mode
+      }
+    } catch (error) {
+      console.error("Error updating admin data:", error);
+      alert("Failed to update admin data. Please try again.");
+    }
+  };
+
+  if (!adminData && !error) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
   return (
-    <TableContainer component={Paper} sx={{ margin: "30px -10px" }}>
-      <Typography
-        variant="h6"
-        sx={{ padding: "6px", backgroundColor: "#f5f5f5" }}
-      >
-        Admin Profile
-      </Typography>
-      <Table>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell>Admin Name</TableCell>
-            <TableCell>Admin Number</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Date of Birth</TableCell>
-            <TableCell>Gender</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow sx={{ backgroundColor: "#f9f9f9" }}>
-            <TableCell>{adminData.fullname}</TableCell>
-            <TableCell>{adminData.phone}</TableCell>
-            <TableCell>{adminData.email}</TableCell>
-            <TableCell>{adminData.Dob}</TableCell>
-            <TableCell>{adminData.gender}</TableCell>
-            <TableCell>
-              <Button
-                variant="contained"
-                color="primary"
-                // onClick={() => handleApprove(adminData._id)}
-              >
-                Approve
-              </Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <div>
+      <table className="table table-striped table-bordered mt-5">
+        <thead style={{ backgroundColor: "#007bff", color: "white" }}>
+          <tr>
+            <th scope="col">Admin Name</th>
+            <th scope="col">Admin Number</th>
+            <th scope="col">Email</th>
+            <th scope="col">Date of Birth</th>
+            <th scope="col">Gender</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ backgroundColor: "#ffffff" }}>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="fullname"
+                  value={adminData.fullname}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                adminData.fullname
+              )}
+            </td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="phone"
+                  value={adminData.phone}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                adminData.phone
+              )}
+            </td>
+            <td>{adminData.email}</td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="date"
+                  className="form-control"
+                  name="Dob"
+                  value={adminData.Dob}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                adminData.Dob
+              )}
+            </td>
+            <td>
+              {isEditing ? (
+                <select
+                  className="form-control"
+                  name="gender"
+                  value={adminData.gender}
+                  onChange={handleInputChange}
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              ) : (
+                adminData.gender
+              )}
+            </td>
+            <td>
+              {isEditing ? (
+                <button className="btn btn-success" onClick={handleUpdate}>
+                  Save
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit
+                </button>
+              )}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 };
 

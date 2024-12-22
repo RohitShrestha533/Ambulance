@@ -17,12 +17,18 @@ import {
   hospitalJWT,
   hospitalData,
   approveHospital,
+  hospitaldriverData,
 } from "../controllers/hospitalController.js";
 import { getAllBookings } from "../controllers/bookingcontroller.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
 const router = express.Router();
 
 router.get("/hospitalData", hospitalJWT, hospitalData);
+router.get(
+  "/hospitaldashboard/hospitaldriverData",
+  hospitalJWT,
+  hospitaldriverData
+);
 
 router.post("/driverRegister", hospitalJWT, driverRegister);
 router.post("/driverLogin", driverLogin);

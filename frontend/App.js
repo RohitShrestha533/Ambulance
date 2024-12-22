@@ -1,6 +1,5 @@
 import React from "react";
 import Test from "./src/components/Test";
-import Map from "./src/components/Map";
 import HomeScreen from "./src/components/HomeScreen";
 import "react-native-gesture-handler";
 import "react-native-reanimated";
@@ -43,7 +42,6 @@ export default function App() {
 
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="Test" component={Test} />
-        <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="Main" component={Main} />
         <Stack.Screen
           name="AvailableAmbulance"

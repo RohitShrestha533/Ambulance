@@ -1,15 +1,4 @@
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Button,
-  Paper,
-  Typography,
-} from "@mui/material";
 import axios from "axios"; // Axios for API requests
 import { useNavigate } from "react-router-dom"; // React Router for navigation
 
@@ -17,6 +6,7 @@ const Settings = () => {
   const [hospitalData, setHospitalData] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchHospitalData = async () => {
@@ -56,74 +46,138 @@ const Settings = () => {
     fetchHospitalData();
   }, [navigate]);
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setHospitalData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
   if (!hospitalData && !error) {
-    return (
-      <Typography variant="h6" sx={{ padding: 2 }}>
-        Loading...
-      </Typography>
-    );
+    return <div>Loading...</div>;
   }
 
   if (error) {
-    return (
-      <Typography variant="h6" sx={{ padding: 2, color: "red" }}>
-        Error: {error}
-      </Typography>
-    );
+    return <div>Error: {error}</div>;
   }
+  const handleUpdate = async () => {
+    try {
+      const token = localStorage.getItem("hospitaltoken");
+      if (!token) {
+        throw new Error("No token found, please login again");
+      }
+      const response = await axios.put(
+        "http://localhost:5000/admin/UpdateHospital",
+        hospitalData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Hospital data updated successfully");
+        setIsEditing(false); // Exit editing mode
+      }
+    } catch (error) {
+      console.error("Error updating Hospital data:", error);
+      alert("Failed to update Hospital data. Please try again.");
+    }
+  };
 
   return (
-    <TableContainer component={Paper} sx={{ margin: "30px -10px" }}>
-      <Typography
-        variant="h6"
-        sx={{ padding: "6px", backgroundColor: "#f5f5f5" }}
-      >
-        Hospital Profile
-      </Typography>
-      <Table>
-        <TableHead>
-          <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-            <TableCell>Hospital Name</TableCell>
-            <TableCell>Registration Number</TableCell>
-            <TableCell>Admin Name</TableCell>
-            <TableCell>Admin Number</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Ambulance</TableCell>
-            <TableCell>Hospital Type</TableCell>
-            <TableCell>Operating Hours</TableCell>
-            <TableCell>Coordinates</TableCell>
-            <TableCell>Emergency Contact</TableCell>
-            <TableCell>Action</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          <TableRow sx={{ backgroundColor: "#f9f9f9" }}>
-            <TableCell>{hospitalData.hospitalName}</TableCell>
-            <TableCell>{hospitalData.registrationNumber}</TableCell>
-            <TableCell>{hospitalData.adminName}</TableCell>
-            <TableCell>{hospitalData.adminContact}</TableCell>
-            <TableCell>{hospitalData.address}</TableCell>
-            <TableCell>{hospitalData.email}</TableCell>
-            <TableCell>{hospitalData.ambulanceCount}</TableCell>
-            <TableCell>{hospitalData.hospitalType}</TableCell>
-            <TableCell>{hospitalData.operatingHours}</TableCell>
-            <TableCell>
-                  {hospitalData.location.coordinates[0]}, {hospitalData.location.coordinates[1]}</TableCell>
-            <TableCell>{hospitalData.emergencyContact}</TableCell>
-            <TableCell>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => console.log("Approve clicked")} // Add your logic here
-              >
-                Approve
-              </Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <div>
+      <table className="table table-striped table-bordered mt-5">
+        <thead style={{ backgroundColor: "#007bff", color: "white" }}>
+          <tr>
+            <th scope="col">Hospital Name</th>
+            <th scope="col">Registration Number</th>
+            <th scope="col">Admin Name</th>
+            <th scope="col">Admin Number</th>
+            <th scope="col">Email</th>
+            <th scope="col">Ambulance</th>
+            <th scope="col">Emergency Contact</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style={{ backgroundColor: "#ffffff" }}>
+            <td>{hospitalData.hospitalName}</td>
+            <td>{hospitalData.registrationNumber}</td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="adminName"
+                  value={hospitalData.adminName}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                hospitalData.adminName
+              )}
+            </td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="adminContact"
+                  value={hospitalData.adminContact}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                hospitalData.adminContact
+              )}
+            </td>
+            <td>{hospitalData.email}</td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="ambulanceCount"
+                  value={hospitalData.ambulanceCount}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                hospitalData.ambulanceCount
+              )}
+            </td>
+            <td>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="form-control"
+                  name="emergencyContact"
+                  value={hospitalData.emergencyContact}
+                  onChange={handleInputChange}
+                />
+              ) : (
+                hospitalData.emergencyContact
+              )}
+            </td>
+
+            <td>
+              {isEditing ? (
+                <button className="btn btn-success" onClick={handleUpdate}>
+                  Save
+                </button>
+              ) : (
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit
+                </button>
+              )}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   );
 };
 

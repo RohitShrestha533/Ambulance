@@ -11,7 +11,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    setError("");
     try {
       const response = await axios.post("http://localhost:5000/hospitalLogin", {
         email,
@@ -22,7 +22,7 @@ const LoginPage = () => {
       if (status === 200) {
         localStorage.setItem("hospitaltoken", token);
         alert("Login successful");
-        navigate("/dashboard");
+        navigate("/navs");
       } else {
         setError(message);
       }

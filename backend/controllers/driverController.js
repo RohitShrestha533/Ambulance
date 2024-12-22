@@ -4,6 +4,7 @@ import { Driver } from "../models/driver.js";
 import { Hospital } from "../models/hospital.js";
 import { Booking } from "../models/Booking.js";
 import Ambulance from "../models/Ambulance.js";
+import { User } from "../models/user.js";
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 export const driverJWT = (req, res, next) => {

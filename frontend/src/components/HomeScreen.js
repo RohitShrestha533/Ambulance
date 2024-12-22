@@ -9,7 +9,6 @@ import {
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import UserProfile from "./UserProfile";
-import Map from "./Map";
 
 const Tab = createBottomTabNavigator();
 

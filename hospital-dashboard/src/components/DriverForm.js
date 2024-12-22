@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import {
-  Box,
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  IconButton,
-} from "@mui/material";
-import axios from "axios";
+import { Form, Button, InputGroup, FormControl } from "react-bootstrap";
+import { IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+
+import axios from "axios";
 
 const DriverForm = () => {
   const [email, setEmail] = useState("");
@@ -85,8 +78,8 @@ const DriverForm = () => {
   };
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         maxWidth: "600px",
         margin: "20px 10px",
         padding: "20px",
@@ -96,96 +89,97 @@ const DriverForm = () => {
       }}
     >
       <h2>Add Driver Details</h2>
-      <form onSubmit={DriverRegisterHandel}>
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="Driver Name"
-          name="driverName"
-          type="text"
-          margin="normal"
-          value={driverName}
-          onChange={handleChange(setDriverName)}
-          required
-        />
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="Phone Number"
-          type="tel"
-          name="phone"
-          margin="normal"
-          value={phone}
-          onChange={handleChange(setPhone)}
-          required
-        />
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="Ambulance Number"
-          type="text"
-          name="ambulanceNumber"
-          margin="normal"
-          value={ambulanceNumber}
-          onChange={handleChange(setAmbulanceNumber)}
-          required
-        />
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="Email"
-          type="email"
-          name="email"
-          margin="normal"
-          value={email}
-          onChange={handleChange(setEmail)}
-        />
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="License Number"
-          type="text"
-          name="licenseNumber"
-          margin="normal"
-          value={licenseNumber}
-          onChange={handleChange(setLicenseNumber)}
-          required
-        />
-        <TextField
-          sx={{ mr: 2, width: 280 }}
-          label="Password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={handleChange(setPassword)}
-          required
-          margin="normal"
-          InputProps={{
-            endAdornment: (
+      <Form onSubmit={DriverRegisterHandel}>
+        <Form.Group className="mb-3">
+          <Form.Label>Driver Name</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter driver's name"
+            value={driverName}
+            onChange={handleChange(setDriverName)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Phone Number</Form.Label>
+          <Form.Control
+            type="tel"
+            placeholder="Enter phone number"
+            value={phone}
+            onChange={handleChange(setPhone)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Ambulance Number</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter ambulance number"
+            value={ambulanceNumber}
+            onChange={handleChange(setAmbulanceNumber)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={handleChange(setEmail)}
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>License Number</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter license number"
+            value={licenseNumber}
+            onChange={handleChange(setLicenseNumber)}
+            required
+          />
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Password</Form.Label>
+          <InputGroup>
+            <FormControl
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter password"
+              value={password}
+              onChange={handleChange(setPassword)}
+              required
+            />
+            <InputGroup.Text>
               <IconButton onClick={handlePasswordVisibility}>
                 {showPassword ? <Visibility /> : <VisibilityOff />}
               </IconButton>
-            ),
-          }}
-        />
-        <FormControl fullWidth margin="normal" required>
-          <InputLabel id="ambulance-type-label">Ambulance Type</InputLabel>
-          <Select
-            labelId="ambulance-type-label"
-            name="ambulanceType"
+            </InputGroup.Text>
+          </InputGroup>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+          <Form.Label>Ambulance Type</Form.Label>
+          <Form.Select
             value={ambulanceType}
             onChange={handleChange(setAmbulanceType)}
+            required
           >
-            <MenuItem value="Basic">Basic Ambulance</MenuItem>
-            <MenuItem value="Advance">Advance Ambulance</MenuItem>
-            <MenuItem value="Transport">Transport Ambulance</MenuItem>
-          </Select>
-        </FormControl>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
-        >
+            <option value="Basic">Basic Ambulance</option>
+            <option value="Advance">Advance Ambulance</option>
+            <option value="Transport">Transport Ambulance</option>
+          </Form.Select>
+        </Form.Group>
+
+        <Button variant="primary" type="submit" onClick={DriverRegisterHandel}>
           Submit
         </Button>
-      </form>
-    </Box>
+      </Form>
+    </div>
   );
 };
 

@@ -2,8 +2,9 @@ import bcrypt from "bcrypt";
 const saltRounds = 10;
 import { Hospital } from "../models/hospital.js";
 import jwt from "jsonwebtoken";
+import { Driver } from "../models/driver.js";
 
-const hospitalJWT = (req, res, next) => {
+export const hospitalJWT = (req, res, next) => {
   const token =
     req.headers["authorization"]?.split(" ")[1] || req.cookies.hospitaltoken;
 
@@ -20,7 +21,6 @@ const hospitalJWT = (req, res, next) => {
     next();
   });
 };
-export { hospitalJWT };
 
 export const hospitalData = async (req, res) => {
   const hospitalId = req.hospital.hospitalId;
@@ -240,8 +240,24 @@ export const hospitalLogin = async (req, res) => {
 };
 
 //logout
-
 export const hospitalLogout = async (req, res) => {
   res.clearCookie("token");
   res.status(200).send({ message: "Logged out successfully" });
+};
+
+export const hospitaldriverData = async (req, res) => {
+  // console.log("Fetching hospital driver data...");
+  const hospitalId = req.hospital.hospitalId;
+  // console.log("Hospital ID:", hospitalId); // Debugging log
+
+  try {
+    const drivers = await Driver.find({ hospital: hospitalId });
+    if (!drivers || drivers.length === 0) {
+      return res.status(404).send({ message: "No drivers found" });
+    }
+    res.status(200).send({ drivers });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Error fetching drivers" });
+  }
 };
