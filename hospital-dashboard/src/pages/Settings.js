@@ -68,7 +68,7 @@ const Settings = () => {
         throw new Error("No token found, please login again");
       }
       const response = await axios.put(
-        "http://localhost:5000/admin/UpdateHospital",
+        "http://localhost:5000/hospitaldashboard/UpdateHospitalData",
         hospitalData,
         {
           headers: {

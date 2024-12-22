@@ -11,7 +11,7 @@ const DriverForm = () => {
   const [driverName, setDriverName] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [ambulanceNumber, setAmbulanceNumber] = useState("");
-  const [ambulanceType, setAmbulanceType] = useState("");
+  const [ambulanceType, setAmbulanceType] = useState("Basic");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 

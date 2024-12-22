@@ -3,6 +3,8 @@ const saltRounds = 10;
 import { Hospital } from "../models/hospital.js";
 import jwt from "jsonwebtoken";
 import { Driver } from "../models/driver.js";
+import Ambulance from "../models/Ambulance.js";
+import mongoose from "mongoose";
 
 export const hospitalJWT = (req, res, next) => {
   const token =
@@ -246,18 +248,124 @@ export const hospitalLogout = async (req, res) => {
 };
 
 export const hospitaldriverData = async (req, res) => {
-  // console.log("Fetching hospital driver data...");
   const hospitalId = req.hospital.hospitalId;
-  // console.log("Hospital ID:", hospitalId); // Debugging log
 
   try {
-    const drivers = await Driver.find({ hospital: hospitalId });
+    // Fetch drivers and populate the ambulance field to get the ambulanceType
+    const drivers = await Driver.find({ hospital: hospitalId })
+      .populate("ambulance", "ambulanceType") // Populate ambulance and select ambulanceType
+      .exec();
+
     if (!drivers || drivers.length === 0) {
       return res.status(404).send({ message: "No drivers found" });
     }
-    res.status(200).send({ drivers });
+
+    // Send response with drivers including ambulanceType
+    const driverDataWithAmbulanceType = drivers.map((driver) => ({
+      ...driver.toObject(),
+      ambulanceType: driver.ambulance ? driver.ambulance.ambulanceType : "N/A", // Ensure ambulanceType is included
+    }));
+
+    res.status(200).send({ drivers: driverDataWithAmbulanceType });
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "Error fetching drivers" });
+  }
+};
+
+export const UpdateHospitalData = async (req, res) => {
+  const hospitalId = req.hospital.hospitalId;
+  const { adminName, adminContact, ambulanceCount, emergencyContact } =
+    req.body;
+  try {
+    const updatedHospital = await Hospital.findByIdAndUpdate(
+      hospitalId,
+      { adminName, adminContact, ambulanceCount, emergencyContact },
+      { new: true }
+    );
+
+    if (!updatedHospital) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Hospital not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Hospital updated successfully",
+      admin: updatedHospital,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const hospitalUpdateDriver = async (req, res) => {
+  const hospitalId = req.hospital.hospitalId;
+  const { driverId } = req.params;
+  const { fullname, phone, ambulanceType, gender } = req.body;
+
+  // Ensure required fields are provided
+  if (!fullname || !phone || !gender || !ambulanceType) {
+    return res.status(400).json({ error: "Required fields are missing" });
+  }
+
+  const session = await mongoose.startSession(); // Start a session for the transaction
+
+  try {
+    session.startTransaction();
+
+    // Update the driver's information
+    const driver = await Driver.findOneAndUpdate(
+      { _id: driverId, hospital: hospitalId },
+      { fullname, phone, gender },
+      { new: true }
+    );
+
+    // If the driver is not found or not linked to the correct hospital
+    if (!driver) {
+      await session.abortTransaction();
+      return res
+        .status(404)
+        .json({
+          error: "Driver not found or not associated with this hospital",
+        });
+    }
+
+    // Update the ambulance information linked to the driver
+    const ambulance = await Ambulance.findOneAndUpdate(
+      { driver: driverId }, // Linking to the driver's ID
+      { ambulanceType },
+      { new: true }
+    );
+
+    // If no ambulance is found or the update fails
+    if (!ambulance) {
+      await session.abortTransaction();
+      return res
+        .status(404)
+        .json({ error: "No ambulance found for this driver" });
+    }
+
+    // Commit the transaction to persist both changes
+    await session.commitTransaction();
+
+    // Return the updated driver and ambulance data
+    res.status(200).json({
+      message: "Driver and ambulance updated successfully",
+      driver,
+      ambulance,
+    });
+  } catch (error) {
+    // Handle any other errors and ensure session is aborted
+    console.error("Error updating hospital's driver information:", error);
+    await session.abortTransaction();
+    res.status(500).json({
+      error: "Failed updating driver's information or ambulance",
+    });
+  } finally {
+    // End the session regardless of success or failure
+    session.endSession();
   }
 };

@@ -66,7 +66,7 @@ export const driverRegister = async (req, res) => {
     }
 
     const existingDriver = await Driver.findOne({
-      $or: [{ email }, { ambulanceNumber }, { licenseNumber }],
+      $or: [{ email }, { ambulanceNumber }, { licenseNumber }, { phone }],
     });
 
     if (existingDriver) {
@@ -87,7 +87,7 @@ export const driverRegister = async (req, res) => {
     });
 
     const newDriver = await Driver.create({
-      driverName,
+      fullname: driverName,
       ambulanceNumber,
       licenseNumber,
       phone,
