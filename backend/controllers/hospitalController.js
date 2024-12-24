@@ -256,9 +256,9 @@ export const hospitaldriverData = async (req, res) => {
       .populate("ambulance", "ambulanceType") // Populate ambulance and select ambulanceType
       .exec();
 
-    if (!drivers || drivers.length === 0) {
-      return res.status(404).send({ message: "No drivers found" });
-    }
+    // if (!drivers || drivers.length === 0) {
+    //   return res.status(404).send({ message: "No drivers found" });
+    // }
 
     // Send response with drivers including ambulanceType
     const driverDataWithAmbulanceType = drivers.map((driver) => ({
@@ -326,11 +326,9 @@ export const hospitalUpdateDriver = async (req, res) => {
     // If the driver is not found or not linked to the correct hospital
     if (!driver) {
       await session.abortTransaction();
-      return res
-        .status(404)
-        .json({
-          error: "Driver not found or not associated with this hospital",
-        });
+      return res.status(404).json({
+        error: "Driver not found or not associated with this hospital",
+      });
     }
 
     // Update the ambulance information linked to the driver

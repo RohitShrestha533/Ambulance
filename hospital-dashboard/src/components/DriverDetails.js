@@ -254,7 +254,9 @@ const DriverDetails = () => {
             withCredentials: true,
           }
         );
+        // if(error.response?.status === 404){
 
+        // }
         if (response.data?.drivers) {
           setDriverData(response.data.drivers);
         } else {
@@ -340,10 +342,13 @@ const DriverDetails = () => {
     setEditDriverData(null); // Clear the edit data
   };
 
+  if (driverData.length === 0) {
+    return <div> Driver has been added...</div>;
+  }
+
   if (!driverData.length && !error) {
     return <div>Loading...</div>;
   }
-
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -356,7 +361,7 @@ const DriverDetails = () => {
             <th>Driver Name</th>
             <th>License Number</th>
             <th>Ambulance Number</th>
-            <th>Admin Number</th>
+            <th>Driver Number</th>
             <th>Email</th>
             <th>Ambulance Type</th>
             <th>Gender</th>
@@ -436,6 +441,7 @@ const DriverDetails = () => {
                     value={editDriverData?.gender || driver.gender}
                     onChange={(e) => handleInputChange(e, driver._id)}
                   >
+                    <option value="">Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>

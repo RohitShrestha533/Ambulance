@@ -97,7 +97,7 @@ const Navs = () => {
               onClick={() => setActiveContent("DriverForm")}
             >
               <button className="nav-link text-dark btn btn-link">
-                <i className="bi bi-gear-fill pe-2"></i> Driver Form
+                <i className="bi bi-person-fill pe-2"></i> Driver Form
               </button>
             </li>
             <hr />
@@ -106,7 +106,7 @@ const Navs = () => {
               onClick={() => setActiveContent("DriverDetails")}
             >
               <button className="nav-link text-dark btn btn-link">
-                <i className="bi bi-gear-fill pe-2"></i> Driver Details
+                <i className="bi-people-fill pe-2"></i> Driver Details
               </button>
             </li>
             <hr />

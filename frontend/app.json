@@ -20,6 +20,7 @@
       "bundleIdentifier": "com.rohitshrestha.AmbulanceApplication"
     },
     "android": {
+      "package": "com.rohitshrestha.AmbulanceApplication",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

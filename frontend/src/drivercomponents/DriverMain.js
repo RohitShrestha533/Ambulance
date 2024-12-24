@@ -13,16 +13,10 @@ import {
 } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { WebView } from "react-native-webview"; // Import WebView to display the map
+import { WebView } from "react-native-webview";
 import DriverProfile from "./DriverProfile";
 import DriverScreen from "./DriverScreen";
 const Tab = createBottomTabNavigator();
-
-// const SOSButton = ({ onPress }) => (
-//   <TouchableOpacity style={styles.sosButton} onPress={onPress}>
-//     <Text style={{ color: "white" }}>SOS</Text>
-//   </TouchableOpacity>
-// );
 
 const DriverMain = () => {
   return (
@@ -54,12 +48,6 @@ const DriverMain = () => {
           }}
         />
       </Tab.Navigator>
-
-      {/* <SOSButton
-        onPress={() => {
-          alert("SOS Button Pressed!");
-        }}
-      /> */}
     </View>
   );
 };
