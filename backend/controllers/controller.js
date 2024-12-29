@@ -71,7 +71,7 @@ export const userLogin = async (req, res) => {
       res.status(200).send({
         status: 200,
         message: "Login successful",
-        token, // Send the token in the response
+        token,
       });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
@@ -127,6 +127,91 @@ export const UpdateUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const UpdateUserPassword = async (req, res) => {
+  const { password, newpassword, confirmnewpassword, role, email } = req.body;
+  let user, driver;
+
+  if (role === "user") {
+    user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).send({ message: "Incorrect current password" });
+    }
+    if (newpassword !== confirmnewpassword) {
+      return res.status(400).send({ message: "Passwords do not match" });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(newpassword, 10);
+      const updatedUser = await User.findByIdAndUpdate(
+        req.user.userId,
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      res.json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
+  }
+
+  if (role === "driver") {
+    driver = await Driver.findOne({ email });
+
+    if (!driver) {
+      return res.status(404).send({ message: "driver not found" });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, driver.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(400).send({ message: "Incorrect current password" });
+    }
+    if (newpassword !== confirmnewpassword) {
+      return res.status(400).send({ message: "Passwords do not match" });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(newpassword, 10);
+      const updatedUser = await Driver.findByIdAndUpdate(
+        req.driver.driverId,
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Driver not found" });
+      }
+
+      res.json({
+        success: true,
+        message: "Password updated successfully",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ success: false, message: "Server error" });
+    }
   }
 };
 
@@ -213,77 +298,25 @@ export const driversnearby = async (req, res) => {
 };
 
 export const driverlocation = async (req, res) => {
-  console.log("Backend - Fetching all ambulances");
-
-  const {
-    latitude,
-    longitude,
-    radius = 50, // Default radius in kilometers (can be adjusted in the request)
-  } = req.body;
-
-  // Validate that latitude and longitude are provided
-  if (!latitude || !longitude) {
-    return res
-      .status(400)
-      .json({ message: "Latitude and Longitude are required" });
-  }
-
-  // Convert degrees to radians (this is for the haversine distance calculation, not used in this case)
-  const toRadians = (degrees) => degrees * (Math.PI / 180);
-
-  // Haversine formula to calculate distance between two points on the Earth
-  const haversineDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
-    const dLat = toRadians(lat2 - lat1);
-    const dLon = toRadians(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRadians(lat1)) *
-        Math.cos(toRadians(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const distance = R * c; // Distance in kilometers
-    return distance; // Return distance in kilometers
-  };
-
-  // Calculate the distance (although not needed for fetching all ambulances)
-  const distance = haversineDistance(latitude, longitude, latitude, longitude);
-  console.log(
-    `The distance to the user's current location is ${distance * 1000} meters.`
-  );
-
-  const radiusInMeters = radius * 1000; // Convert radius from kilometers to meters (not used here)
+  console.log("Backend - Fetching all drivers' locations");
 
   try {
-    // Fetch all ambulances without filtering by location
-    const ambulances = await Ambulance.aggregate([
-      {
-        $lookup: {
-          from: "drivers", // Look up the driver details
-          localField: "driver", // Field in Ambulance schema
-          foreignField: "_id", // Match to the driver collection's _id
-          as: "driverDetails", // Alias for the driver details
-        },
-      },
-      {
-        $unwind: {
-          path: "$driverDetails", // Unwind driverDetails to make it a single object
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $limit: 100, // Limit to 100 ambulances (if there are more than 100)
-      },
-    ]);
+    const drivers = await Driver.find(
+      {},
+      { fullname: 1, "location.coordinates": 1, _id: 0 }
+    );
 
-    // Send all ambulances along with the distance information (even if it's not used here)
-    res.status(200).json({ ambulances, totaldistance: distance * 1000 });
+    // Format the data so that it's more easily consumed by the frontend
+    const formattedDrivers = drivers.map((driver) => ({
+      fullname: driver.fullname,
+      latitude: driver.location.coordinates[0], // Latitude is the second element in the coordinates array
+      longitude: driver.location.coordinates[1], // Longitude is the first element
+    }));
+
+    console.log("Formatted Driver Data: ", formattedDrivers);
+    res.status(200).json(formattedDrivers);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching ambulances", error });
+    console.error("Error fetching driver locations:", error);
+    res.status(500).json({ message: "Error fetching driver locations." });
   }
 };

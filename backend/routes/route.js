@@ -1,4 +1,5 @@
 import express from "express";
+import { UpdateUserPassword } from "../controllers/controller.js";
 import {
   driverRegister,
   driverLogin,
@@ -37,6 +38,7 @@ router.post("/driverLogin", driverLogin);
 router.post("/driverLogout", driverLogout);
 router.get("/DriverData", driverJWT, DriverData);
 router.put("/UpdateDriver", driverJWT, UpdateDriver);
+router.post("/driver/UpdateUserPassword", driverJWT, UpdateUserPassword);
 
 router.get("/driverbookingHistory", driverJWT, driverbookingHistory);
 router.post("/drivercancelBooking", driverJWT, drivercancelBooking);

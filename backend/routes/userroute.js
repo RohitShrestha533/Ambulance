@@ -7,6 +7,7 @@ import {
   UpdateUser,
   driversnearby,
   driverlocation,
+  UpdateUserPassword,
 } from "../controllers/controller.js";
 import {
   bookambulance,
@@ -17,7 +18,7 @@ import { authenticateJWT } from "../middleware/authenticateJWT.js";
 const router = express.Router();
 
 router.post("/drivers-nearby", authenticateJWT, driversnearby);
-router.post("/driverlocation", driverlocation);
+router.get("/driverlocation", driverlocation);
 router.post("/book-ambulance", authenticateJWT, bookambulance);
 router.get("/userbookingHistory", authenticateJWT, userbookingHistory);
 router.post("/cancelBooking", authenticateJWT, cancelBooking);
@@ -28,5 +29,6 @@ router.post("/userLogout", userLogout);
 
 router.get("/UserData", authenticateJWT, UserData);
 router.put("/UpdateUser", authenticateJWT, UpdateUser);
+router.post("/UpdateUserPassword", authenticateJWT, UpdateUserPassword);
 
 export default router;

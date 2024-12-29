@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
 import axios from "axios";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const SectionlistToDisplay = [
   {
     title: "Profile",
     data: [
       { name: "Account" },
+      { name: "password change" },
       { name: "History" },
       { name: "Policies" },
       { name: "Log Out" },
@@ -23,7 +25,7 @@ const SectionlistToDisplay = [
   },
 ];
 
-// let ip = "192.168.218.106";
+// let ip = "172.30.2.208";
 let ip = "192.168.18.12";
 
 const Item = ({ name, navigation }) => {
@@ -31,6 +33,9 @@ const Item = ({ name, navigation }) => {
     switch (name) {
       case "Account":
         navigation.navigate("Account");
+        break;
+      case "password change":
+        navigation.navigate("Passwordchange");
         break;
       case "History":
         navigation.navigate("History");
@@ -63,14 +68,15 @@ const Item = ({ name, navigation }) => {
             } else {
               await AsyncStorage.removeItem("token");
             }
-
-            navigation.replace("Login");
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Main" }], // Main is the screen you want to navigate to
+            });
             alert("Logged out successfully");
           } else {
             alert("No token found, user might already be logged out.");
           }
         } catch (error) {
-          console.error("Error during logout:", error);
           alert("Logout failed. Please try again.");
         }
 

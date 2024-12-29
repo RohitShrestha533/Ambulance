@@ -26,7 +26,7 @@ const Login = () => {
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   let ip = "192.168.18.12";
-  // let ip = "192.168.218.106";
+  // let ip = "172.30.2.208";
 
   async function UserLoginHandel() {
     if (!role) {
@@ -50,7 +50,7 @@ const Login = () => {
       } else {
         response = await axios.post(`http://${ip}:5000/driverLogin`, userData);
       }
-      const { status, message, token } = response.data;
+      const { status, message, token, fullName } = response.data;
 
       if (status === 200) {
         alert("Login successful");
@@ -63,14 +63,21 @@ const Login = () => {
           } else {
             await AsyncStorage.setItem("token", token);
           }
-          navigation.replace("Main");
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Main" }], // Main is the screen you want to navigate to
+            // routes: [{ name: "Main" }],
+          });
         } else {
           if (Platform.OS === "web") {
             localStorage.setItem("drivertoken", token);
           } else {
             await AsyncStorage.setItem("drivertoken", token);
           }
-          navigation.replace("DriverMain");
+          navigation.reset({
+            index: 0,
+            // routes: [{ name: "DriverMain" }],
+          });
         }
       } else {
         alert(message);

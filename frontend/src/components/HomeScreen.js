@@ -1,126 +1,122 @@
-import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-import UserProfile from "./UserProfile";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // For storing JWT token
 
-const Tab = createBottomTabNavigator();
+const HomeScreen = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login status
+  const navigation = useNavigation(); // For navigation
 
-// Home Screen
-const HomeScreen = () => (
-  <ScrollView contentContainerStyle={styles.scrollContainer}>
-    <Text style={styles.header}>Welcome to the Home Page</Text>
-    {/* {Array.from({ length: 20 }, (_, index) => (
-      <View key={index} style={styles.card}>
-        <Text>Card {index + 1}</Text>
-      </View> */}
-    <Map />
-  </ScrollView>
-);
+  // Check if the user is logged in by verifying JWT token
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token"); // Retrieve the JWT token
+        if (token) {
+          setIsLoggedIn(true); // Token exists, user is logged in
+        } else {
+          setIsLoggedIn(false); // No token, user is not logged in
+        }
+      } catch (error) {
+        console.error("Error checking login status", error);
+        setIsLoggedIn(false);
+      }
+    };
 
-// Profile Screen
-const ProfileScreen = () => (
-  <View style={styles.center}>
-    <Text style={styles.header}>Profile Page</Text>
-  </View>
-);
+    checkLoginStatus();
+  }, []);
 
-// SOS Button Component
-const SOSButton = ({ onPress }) => (
-  <TouchableOpacity style={styles.sosButton} onPress={onPress}>
-    <Text style={{ color: "white" }}>SOS</Text>
-  </TouchableOpacity>
-);
+  // Handle the Book Ambulance action
+  const handleBookAmbulance = () => {
+    if (isLoggedIn) {
+      navigation.navigate("Test"); // Navigate to Map if logged in
+    } else {
+      navigation.navigate("Login"); // Navigate to Login if not logged in
+    }
+  };
 
-const Main = () => {
   return (
-    <View style={{ flex: 1 }}>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: styles.tabBar,
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home" size={size} color={color} />
-            ),
-            tabBarLabel: "Home",
-          }}
-        />
-        <Tab.Screen
-          name="Profile"
-          component={UserProfile}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="person" size={size} color={color} />
-            ),
-            tabBarLabel: "Profile",
-          }}
-        />
-      </Tab.Navigator>
+    <View style={styles.container}>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Welcome back, !</Text>
+        <Text style={styles.subHeaderText}>
+          Emergency services are just a tap away.
+        </Text>
+      </View>
 
-      {/* SOS Button */}
-      <SOSButton
-        onPress={() => {
-          alert("SOS Button Pressed!");
-        }}
-      />
+      {/* Grid Section */}
+      <View style={styles.grid}>
+        <TouchableOpacity style={styles.card} onPress={handleBookAmbulance}>
+          <FontAwesome5 name="ambulance" size={50} color="red" />
+          <Text style={styles.cardText}>Book Ambulance</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.card}>
+          <Ionicons name="call" size={40} color="red" />
+          <Text style={styles.cardText}>Emergency Call</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.card}>
+          <Ionicons name="business" size={40} color="red" />
+          <Text style={styles.cardText}>
+            <Text style={{ fontWeight: "bold" }}>Nearby</Text> Hospitals
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.card}>
+          <Ionicons name="time" size={40} color="red" />
+          <Text style={styles.cardText}>Medical History</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
-  scrollContainer: {
-    padding: 20,
-  },
-  center: {
+  container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#fff",
   },
   header: {
+    backgroundColor: "#E63946",
+    padding: 30,
+    alignItems: "center",
+  },
+  headerText: {
+    color: "#fff",
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+  },
+  subHeaderText: {
+    color: "#fff",
+    fontSize: 16,
+    marginTop: 5,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    marginTop: 20,
   },
   card: {
+    width: "45%",
+    backgroundColor: "#fff",
+    alignItems: "center",
     padding: 20,
     marginVertical: 10,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-  },
-  tabBar: {
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
-    height: 70,
-    position: "absolute",
-    bottom: 0,
-  },
-  sosButton: {
-    position: "absolute",
-    bottom: 35,
-    alignSelf: "center",
-    backgroundColor: "red",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
     elevation: 5,
-    zIndex: 10,
+  },
+  cardText: {
+    marginTop: 10,
+    fontSize: 16,
+    textAlign: "center",
   },
 });
 

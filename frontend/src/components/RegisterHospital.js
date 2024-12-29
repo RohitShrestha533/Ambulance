@@ -14,7 +14,7 @@ import { WebView } from "react-native-webview";
 import axios from "axios";
 import Login from "./Login";
 const RegisterHospital = () => {
-  // let ip = "192.168.218.106";
+  // let ip = "172.30.2.208";
   let ip = "192.168.18.12";
   const [hospitalName, setHospitalName] = useState("");
   const [registrationNumber, setRegistrationNumber] = useState("");

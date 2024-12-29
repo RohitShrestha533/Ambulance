@@ -15,7 +15,7 @@ const AvailableAmbulance = ({ route }) => {
   console.log("Available ambulances:", drivers);
   console.log("UserLocation:", mylocation);
   console.log("DestinationLocation:", destination);
-  // let ip = "192.168.218.106";
+  // let ip = "172.30.2.208";
   let ip = "192.168.18.12";
   const bookAmbulance = async (
     ambulanceId,

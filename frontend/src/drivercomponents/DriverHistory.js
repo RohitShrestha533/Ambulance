@@ -43,11 +43,8 @@ const DriverHistory = () => {
         if (response.status !== 200) {
           throw new Error("Failed to fetch bookings");
         }
-
         setBookings(response.data);
       } catch (error) {
-        console.error("Error during fetching bookings: ", error);
-      } finally {
         setLoading(false);
       }
     };

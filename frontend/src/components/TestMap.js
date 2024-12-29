@@ -6,23 +6,25 @@ import {
   StyleSheet,
   Alert,
   Modal,
+  Platform,
 } from "react-native";
 import { WebView } from "react-native-webview";
 import * as Location from "expo-location";
 import axios from "axios";
 
-const Test = () => {
-  const [currentCoordinates, setCurrentCoordinates] = useState(""); // Current coordinates state
-  const [currentAddress, setCurrentAddress] = useState(""); // Current address state
-  const [destinationCoordinates, setDestinationCoordinates] = useState(""); // Destination coordinates state
-  const [destinationAddress, setDestinationAddress] =
-    useState("Select destination"); // Destination address state
+const TestMap = () => {
+  const [currentLocation, setCurrentLocation] = useState(
+    "Fetching location..."
+  );
+  const [currentCoordinates, setCurrentCoordinates] = useState("");
+  const [currentAddress, setCurrentAddress] = useState("");
+  const [destinationCoordinates, setDestinationCoordinates] = useState("");
+  const [destinationAddress, setDestinationAddress] = useState("");
   const [showMap, setShowMap] = useState(false);
-  const [locationType, setLocationType] = useState(""); // "current" or "destination"
-  const [tempCoordinates, setTempCoordinates] = useState(""); // Temporary coordinates for map selection
-  const [tempPlaceName, setTempPlaceName] = useState(""); // Temporary place name
-  const [driverLocations, setDriverLocations] = useState([]); // Driver locations
-  const [mapKey, setMapKey] = useState(0); // Key to force re-render WebView
+  const [locationType, setLocationType] = useState("");
+  const [tempCoordinates, setTempCoordinates] = useState("");
+  const [tempPlaceName, setTempPlaceName] = useState("");
+  const [driverLocations, setDriverLocations] = useState([]);
 
   let ip = "192.168.18.12"; // Change to your local IP address
 
@@ -34,8 +36,7 @@ const Test = () => {
         const latitude = location.coords.latitude;
         const longitude = location.coords.longitude;
         setCurrentCoordinates(`${latitude},${longitude}`);
-        setDestinationCoordinates(""); // Reset destination coordinates on new current location
-        setDestinationAddress("Select destination"); // Reset destination address on new current location
+        // setDestinationCoordinates(`${latitude},${longitude}`);
 
         const geocode = await Location.reverseGeocodeAsync({
           latitude,
@@ -47,6 +48,7 @@ const Test = () => {
             district || ""
           }, ${subLocality || ""}`;
           setCurrentAddress(fullAddress || "Address not found");
+          //   setDestinationAddress(fullAddress || "Address not found");
         }
       } catch (error) {
         console.error("Error fetching location:", error);
@@ -60,7 +62,7 @@ const Test = () => {
   const fetchDriverLocations = async () => {
     try {
       const response = await axios.get(`http://${ip}:5000/driverlocation`);
-      console.log("Fetched driver locations:", response.data);
+      console.log("Fetched driver locations:", response.data); // Debugging data here
       setDriverLocations(response.data || []);
     } catch (error) {
       console.error("Error fetching driver locations:", error);
@@ -70,8 +72,8 @@ const Test = () => {
 
   useEffect(() => {
     requestLocationPermission();
-    fetchDriverLocations();
-  }, []);
+    fetchDriverLocations(); // Fetch driver data when the page is opened
+  }, []); // Empty dependency array to trigger only on component mount
 
   const handleMapMessage = (event) => {
     const { latitude, longitude } = JSON.parse(event.nativeEvent.data);
@@ -88,10 +90,6 @@ const Test = () => {
       .catch((error) => console.error("Error reverse geocoding:", error));
   };
 
-  const finddriver = () => {
-    console.log("from :", currentCoordinates);
-    console.log("to :", destinationCoordinates);
-  };
   const confirmLocation = () => {
     if (locationType === "current") {
       setCurrentAddress(tempPlaceName);
@@ -102,8 +100,6 @@ const Test = () => {
     }
     setShowMap(false);
   };
-
-  const carIconBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWx..."; // Base64-encoded SVG icon
 
   const mapHtml = (lat, lng, drivers) => `
     <!DOCTYPE html>
@@ -121,33 +117,43 @@ const Test = () => {
     <body>
       <div id="map"></div>
       <script>
+        // Initialize the map centered at the current location
         const map = L.map('map').setView([${lat}, ${lng}], 13);
+
+        // Add OpenStreetMap tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
         }).addTo(map);
-        let currentMarker = L.marker([${lat}, ${lng}]).addTo(map).bindPopup("Current Location");
-        
+
+        // Mark the current location on the map
+        const currentMarker = L.marker([${lat}, ${lng}]).addTo(map).bindPopup("Current Location");
+
+        // Fallback image URL if SVG doesn't work
+        const carIconImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/7/7f/Ionicons_2.0.1_car-outline.svg';
+
+        // Loop through the drivers' data and place markers on the map
         const driverLocations = ${JSON.stringify(drivers)};
         driverLocations.forEach(driver => {
           if (driver.latitude && driver.longitude) {
             const driverIcon = L.icon({
-              iconUrl: '${carIconBase64}',
-              iconSize: [40, 40],
+              iconUrl: carIconImageUrl, // Use image URL here for fallback
+              iconSize: [40, 40], // Adjust the size
               iconAnchor: [20, 40],
               popupAnchor: [0, -40],
             });
+
             L.marker([driver.latitude, driver.longitude], { icon: driverIcon })
               .addTo(map)
               .bindPopup(\`Driver: \${driver.fullname || "Unknown"}\`);
+          } else {
+            console.error("Invalid driver data:", driver); // Log invalid data
           }
         });
 
+        // When the user clicks on the map, return the clicked location's coordinates
         map.on('click', function(e) {
           const { lat, lng } = e.latlng;
           window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: lat, longitude: lng }));
-          if (currentMarker) {
-            currentMarker.setLatLng([lat, lng]);
-          }
         });
       </script>
     </body>
@@ -156,11 +162,11 @@ const Test = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Set Locations</Text>
-      <Text style={styles.label}>Current Location:</Text>
+      <Text style={styles.label}>From Location:</Text>
       <TouchableOpacity
         onPress={() => {
           setLocationType("current");
-          fetchDriverLocations();
+          fetchDriverLocations(); // Fetch drivers before opening the map
           setShowMap(true);
         }}
       >
@@ -172,7 +178,7 @@ const Test = () => {
       <TouchableOpacity
         onPress={() => {
           setLocationType("destination");
-          fetchDriverLocations();
+          fetchDriverLocations(); // Fetch drivers before opening the map
           setShowMap(true);
         }}
       >
@@ -191,21 +197,13 @@ const Test = () => {
           </TouchableOpacity>
           <View style={styles.mapContainer}>
             <WebView
-              key={mapKey}
               originWhitelist={["*"]}
               source={{
-                html:
-                  locationType === "destination"
-                    ? mapHtml(
-                        destinationCoordinates.split(",")[0],
-                        destinationCoordinates.split(",")[1],
-                        driverLocations
-                      )
-                    : mapHtml(
-                        currentCoordinates.split(",")[0],
-                        currentCoordinates.split(",")[1],
-                        driverLocations
-                      ),
+                html: mapHtml(
+                  currentCoordinates.split(",")[0],
+                  currentCoordinates.split(",")[1],
+                  driverLocations
+                ),
               }}
               javaScriptEnabled={true}
               onMessage={handleMapMessage}
@@ -220,10 +218,6 @@ const Test = () => {
           </TouchableOpacity>
         </View>
       </Modal>
-
-      <TouchableOpacity style={styles.confirmButton} onPress={finddriver}>
-        <Text style={styles.confirmButtonText}>Search Ambulance</Text>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -260,7 +254,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     flex: 1,
     marginBottom: 10,
-    marginTop: 50,
+    marginTop: 50, // Add space on top of the map
   },
   closeButton: {
     position: "absolute",
@@ -284,7 +278,6 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     borderRadius: 5,
-    alignItems: "center",
   },
   confirmButtonText: {
     color: "#fff",
@@ -292,4 +285,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Test;
+export default TestMap;

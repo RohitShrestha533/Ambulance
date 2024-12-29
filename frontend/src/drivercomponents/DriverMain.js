@@ -17,8 +17,39 @@ import { WebView } from "react-native-webview";
 import DriverProfile from "./DriverProfile";
 import DriverScreen from "./DriverScreen";
 const Tab = createBottomTabNavigator();
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const DriverMain = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const token = await AsyncStorage.getItem("drivertoken");
+        if (token) {
+          setIsLoggedIn(true); // If token exists, the user is logged in
+        } else {
+          setIsLoggedIn(false); // No token, user is not logged in
+        }
+      } catch (error) {
+        console.error("Error checking login status", error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []); // Empty dependency array ensures this runs once when the component mounts
+
+  // Handle Profile tab click, check login status
+  const handleProfileTabPress = () => {
+    if (isLoggedIn) {
+      navigation.navigate("DriverProfile");
+    } else {
+      navigation.navigate("Login"); // Redirect to login if not logged in
+    }
+  };
   return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator
@@ -40,6 +71,12 @@ const DriverMain = () => {
         <Tab.Screen
           name="DriverProfile"
           component={DriverProfile}
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault(); // Prevent default tab press behavior
+              handleProfileTabPress(); // Check login status before navigating
+            },
+          }}
           options={{
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="person" size={size} color={color} />

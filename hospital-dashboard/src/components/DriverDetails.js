@@ -343,7 +343,7 @@ const DriverDetails = () => {
   };
 
   if (driverData.length === 0) {
-    return <div> Driver has been added...</div>;
+    return <div> Driver hasnot been added...</div>;
   }
 
   if (!driverData.length && !error) {

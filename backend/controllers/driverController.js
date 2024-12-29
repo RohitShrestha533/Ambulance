@@ -220,7 +220,7 @@ export const driverbookingHistory = async (req, res) => {
       });
     res.json(bookings);
   } catch (error) {
-    console.error("Error fetching booking history:", error);
+    // console.error("Error fetching booking history:", error);
     res.status(500).json({ message: "Failed to fetch booking history" });
   }
 };

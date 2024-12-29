@@ -7,6 +7,8 @@ import { StatusBar } from "expo-status-bar";
 import Login from "./src/components/Login";
 import UserProfile from "./src/components/UserProfile";
 import Account from "./src/components/Account";
+import Map from "./src/components/Map";
+import TestMap from "./src/components/TestMap";
 import AccountUpdate from "./src/components/AccountUpdate";
 import History from "./src/components/History";
 import Main from "./src/components/Main";
@@ -14,7 +16,7 @@ import PrivacyPolicy from "./src/components/PrivacyPolicy";
 import TermsAndConditions from "./src/components/TermsAndConditions";
 import Policies from "./src/components/Policies";
 import AvailableAmbulance from "./src/components/AvailableAmbulance";
-
+import Passwordchange from "./src/components/Passwordchange";
 import DriverProfile from "./src/drivercomponents/DriverProfile";
 import DriverAccount from "./src/drivercomponents/DriverAccount";
 import DriverAccountUpdate from "./src/drivercomponents/DriverAccountUpdate";
@@ -23,7 +25,7 @@ import DriverMain from "./src/drivercomponents/DriverMain";
 import DriverPrivacyPolicy from "./src/drivercomponents/DriverPrivacyPolicy";
 import DriverTermsAndConditions from "./src/drivercomponents/DriverTermsAndConditions";
 import DriverPolicies from "./src/drivercomponents/DriverPolicies";
-
+import Driverpasswordchange from "./src/drivercomponents/Driverpasswordchange";
 import RegisterHospital from "./src/components/RegisterHospital";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -33,7 +35,7 @@ const Stack = createStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Main">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -42,6 +44,8 @@ export default function App() {
 
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="Test" component={Test} />
+        <Stack.Screen name="Map" component={Map} />
+        <Stack.Screen name="TestMap" component={TestMap} />
         <Stack.Screen name="Main" component={Main} />
         <Stack.Screen
           name="AvailableAmbulance"
@@ -69,6 +73,7 @@ export default function App() {
         />
         <Stack.Screen name="AccountUpdate" component={AccountUpdate} />
         <Stack.Screen name="History" component={History} />
+        <Stack.Screen name="Passwordchange" component={Passwordchange} />
         <Stack.Screen name="Policies" component={Policies} />
 
         <Stack.Screen name="RegisterHospital" component={RegisterHospital} />
@@ -99,6 +104,10 @@ export default function App() {
           component={DriverAccountUpdate}
         />
         <Stack.Screen name="DriverHistory" component={DriverHistory} />
+        <Stack.Screen
+          name="Driverpasswordchange"
+          component={Driverpasswordchange}
+        />
         <Stack.Screen name="DriverPolicies" component={DriverPolicies} />
       </Stack.Navigator>
       <StatusBar style="auto" />

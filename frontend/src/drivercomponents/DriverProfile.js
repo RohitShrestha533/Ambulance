@@ -16,6 +16,7 @@ const SectionlistToDisplay = [
     title: "Profile",
     data: [
       { name: "Account" },
+      { name: "Password Change" },
       { name: "History" },
       { name: "Policies" },
       { name: "Log Out" },
@@ -31,6 +32,9 @@ const Item = ({ name, navigation }) => {
     switch (name) {
       case "Account":
         navigation.navigate("DriverAccount");
+        break;
+      case "Password Change":
+        navigation.navigate("Driverpasswordchange");
         break;
       case "History":
         navigation.navigate("DriverHistory");
@@ -63,14 +67,15 @@ const Item = ({ name, navigation }) => {
             } else {
               await AsyncStorage.removeItem("drivertoken");
             }
-
-            navigation.replace("Login");
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "Main" }], // Main is the screen you want to navigate to
+            });
             alert("Logged out successfully");
           } else {
             alert("No token found, user might already be logged out.");
           }
         } catch (error) {
-          console.error("Error during logout:", error);
           alert("Logout failed. Please try again.");
         }
 
