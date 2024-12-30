@@ -10,11 +10,15 @@ import {
 import { WebView } from "react-native-webview";
 import * as Location from "expo-location";
 import axios from "axios";
-
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const Test = () => {
+  const navigation = useNavigation();
   const [currentCoordinates, setCurrentCoordinates] = useState(""); // Current coordinates state
   const [currentAddress, setCurrentAddress] = useState(""); // Current address state
-  const [destinationCoordinates, setDestinationCoordinates] = useState(""); // Destination coordinates state
+  const [destinationCoordinates, setDestinationCoordinates] = useState(
+    "27.63289726932407,84.4077873229980"
+  );
   const [destinationAddress, setDestinationAddress] =
     useState("Select destination"); // Destination address state
   const [showMap, setShowMap] = useState(false);
@@ -34,7 +38,7 @@ const Test = () => {
         const latitude = location.coords.latitude;
         const longitude = location.coords.longitude;
         setCurrentCoordinates(`${latitude},${longitude}`);
-        setDestinationCoordinates(""); // Reset destination coordinates on new current location
+        // setDestinationCoordinates(""); // Reset destination coordinates on new current location
         setDestinationAddress("Select destination"); // Reset destination address on new current location
 
         const geocode = await Location.reverseGeocodeAsync({
@@ -88,10 +92,59 @@ const Test = () => {
       .catch((error) => console.error("Error reverse geocoding:", error));
   };
 
-  const finddriver = () => {
-    console.log("from :", currentCoordinates);
-    console.log("to :", destinationCoordinates);
+  const finddriver = async () => {
+    try {
+      if (!currentCoordinates || !destinationCoordinates) {
+        Alert.alert(
+          "Error",
+          "Both current and destination locations must be selected."
+        );
+        return;
+      }
+
+      const [latitude, longitude] = currentCoordinates.split(",").map(Number);
+      const [deslatitude, deslongitude] = destinationCoordinates
+        .split(",")
+        .map(Number);
+
+      console.log("From coordinates:", latitude, longitude);
+      console.log("To coordinates:", deslatitude, deslongitude);
+
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Error", "No token found. Please login again.");
+        return;
+      }
+
+      console.log("Sending request to drivers-nearby endpoint...");
+      const response = await axios.post(
+        `http://${ip}:5000/drivers-nearby`,
+        { latitude, longitude, deslatitude, deslongitude },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.status === 200) {
+        console.log("Nearby drivers fetched successfully:", response.data);
+        console.log("Nearby ", response.data.totaldistance);
+
+        navigation.navigate("AvailableAmbulance", {
+          drivers: response.data,
+          mylocation: currentCoordinates,
+          destination: destinationCoordinates,
+          totaldistance: response.data.totaldistance,
+        });
+      } else {
+        Alert.alert("Error", "Failed to fetch drivers.");
+      }
+    } catch (error) {
+      console.error("Error in finddriver:", error.message);
+      if (error.response) {
+        console.error("Response error data:", error.response.data);
+      }
+      Alert.alert("Error", "Unable to find drivers. Please try again.");
+    }
   };
+
   const confirmLocation = () => {
     if (locationType === "current") {
       setCurrentAddress(tempPlaceName);
@@ -103,7 +156,8 @@ const Test = () => {
     setShowMap(false);
   };
 
-  const carIconBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWx..."; // Base64-encoded SVG icon
+  const carIconBase64 =
+    "data:image/jpeg;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJpb25pY29uIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHBhdGggZD0iTTgwIDIyNGwzNy43OC04OC4xNUMxMjMuOTMgMTIxLjUgMTM5LjYgMTEyIDE1Ny4xMSAxMTJoMTk3Ljc4YzE3LjUxIDAgMzMuMTggOS41IDM5LjMzIDIzLjg1TDQzMiAyMjRNODAgMjI0aDM1MnYxNDRIODB6TTExMiAzNjh2MzJIODB2LTMyTTQzMiAzNjh2MzJoLTMydi0zMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIzMiIvPjxjaXJjbGUgY3g9IjE0NCIgY3k9IjI4OCIgcj0iMTYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMzIiLz48Y2lyY2xlIGN4PSIzNjgiIGN5PSIyODgiIHI9IjE2IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjMyIi8+PC9zdmc+"; // Base64-encoded SVG icon
 
   const mapHtml = (lat, lng, drivers) => `
     <!DOCTYPE html>
@@ -116,6 +170,7 @@ const Test = () => {
       <style>
         body { margin: 0; padding: 0; height: 100vh; }
         #map { height: 100%; width: 100%; }
+  
       </style>
     </head>
     <body>
@@ -131,8 +186,8 @@ const Test = () => {
         driverLocations.forEach(driver => {
           if (driver.latitude && driver.longitude) {
             const driverIcon = L.icon({
-              iconUrl: '${carIconBase64}',
-              iconSize: [40, 40],
+             iconUrl:'${carIconBase64}',
+            iconSize: [40, 40],
               iconAnchor: [20, 40],
               popupAnchor: [0, -40],
             });
