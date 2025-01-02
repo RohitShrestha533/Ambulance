@@ -6,7 +6,7 @@ const ProtectedRoute = ({ isAuthenticated, children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children; // If authenticated, render the children (Navs component)
+  return children;
 };
 
 export default ProtectedRoute;

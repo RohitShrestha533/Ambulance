@@ -13,6 +13,7 @@ import {
   bookambulance,
   userbookingHistory,
   cancelBooking,
+  sosbook,
 } from "../controllers/bookingcontroller.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
 const router = express.Router();
@@ -22,6 +23,7 @@ router.get("/driverlocation", driverlocation);
 router.post("/book-ambulance", authenticateJWT, bookambulance);
 router.get("/userbookingHistory", authenticateJWT, userbookingHistory);
 router.post("/cancelBooking", authenticateJWT, cancelBooking);
+router.post("/sosbook", authenticateJWT, sosbook);
 
 router.post("/userRegister", userRegister);
 router.post("/userLogin", userLogin);

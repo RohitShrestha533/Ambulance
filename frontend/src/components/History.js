@@ -37,6 +37,7 @@ const History = ({ userId }) => {
       }
       const data = await response.json();
       setBookingHistory(data);
+      // console.log("bb", data);
     } catch (error) {
       console.error("Error fetching booking history:", error);
     } finally {
@@ -96,19 +97,20 @@ const History = ({ userId }) => {
     <View style={styles.card}>
       <Text style={styles.header}>Booking Details</Text>
       <Text style={styles.text}>Ambulance Type: {item.ambulanceType}</Text>
-      <Text style={styles.text}>Ambulance Number: {item.ambulanceNumber}</Text>
+      <Text style={styles.text}>
+        Ambulance Number: {item.ambulanceId?.ambulanceNumber}
+      </Text>
       <Text style={styles.text}>Driver Name: {item.driverId?.fullname}</Text>
       <Text style={styles.text}>Driver Phone: {item.driverId?.phone}</Text>
       <Text style={styles.text}>
         Booking Date: {new Date(item.createdAt).toLocaleString()}
       </Text>
       <Text style={styles.text}>
-        Distance: {item.distance.toFixed(2)} meters
+        Ambulance Distance: {item.distance.toFixed(2)} meters
       </Text>
-      <Text style={styles.text}>Price: Rs {item.price.toFixed(2)}</Text>
+      <Text style={styles.text}>Price: Rs {item.price}</Text>
       <Text style={styles.text}>Status: {item.bookingstatus}</Text>
 
-      {/* Show cancel button if booking status is pending */}
       {item.bookingstatus === "pending" && (
         <TouchableOpacity
           style={styles.cancelButton}
@@ -165,15 +167,23 @@ const styles = StyleSheet.create({
     color: "black",
   },
   card: {
+    marginBottom: 12,
     padding: 16,
-    marginBottom: 16,
+    backgroundColor: "#f9f9f9",
     borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: "#ddd",
+    borderWidth: 1,
   },
+  // card: {
+  //   padding: 16,
+  //   marginBottom: 16,
+  //   borderRadius: 8,
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.1,
+  //   shadowRadius: 4,
+  //   elevation: 2,
+  // },
   text: {
     fontSize: 16,
     marginBottom: 8,

@@ -70,7 +70,7 @@ const Item = ({ name, navigation }) => {
             }
             navigation.reset({
               index: 0,
-              routes: [{ name: "Main" }], // Main is the screen you want to navigate to
+              routes: [{ name: "Main" }],
             });
             alert("Logged out successfully");
           } else {

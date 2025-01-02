@@ -26,11 +26,10 @@ const RevenuePieChart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch data from the RevenueChart API
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("admintoken"); // Retrieve the token from localStorage
+        const token = localStorage.getItem("admintoken");
 
         if (!token) {
           throw new Error("Authentication token is missing.");
@@ -40,7 +39,7 @@ const RevenuePieChart = () => {
           "http://localhost:5000/admin/revenuechart",
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Send token in the Authorization header
+              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -80,12 +79,10 @@ const RevenuePieChart = () => {
     fetchData();
   }, []);
 
-  // Show loading message until data is fetched
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  // Show error message if an error occurred
   if (error) {
     return <div>Error: {error}</div>;
   }
@@ -102,7 +99,7 @@ const RevenuePieChart = () => {
                 data={chartData}
                 options={{
                   responsive: true,
-                  maintainAspectRatio: true, // Maintain aspect ratio
+                  maintainAspectRatio: true,
                   plugins: {
                     legend: {
                       position: "top",

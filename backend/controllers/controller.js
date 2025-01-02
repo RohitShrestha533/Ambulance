@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { Driver } from "../models/driver.js";
 import { User } from "../models/user.js";
 import Ambulance from "../models/Ambulance.js";
-//register
+
 export const userRegister = async (req, res) => {
   const { email, phone, password, confirmpassword } = req.body;
 
@@ -41,7 +41,6 @@ export const userRegister = async (req, res) => {
   }
 };
 
-// Login function with JWT authentication
 export const userLogin = async (req, res) => {
   const { email, password, role } = req.body;
   let user;
@@ -85,7 +84,6 @@ export const userLogout = async (req, res) => {
   res.status(200).send({ message: "Logged out successfully" });
 };
 
-// select user data
 export const UserData = async (req, res) => {
   const userId = req.user.userId;
 
@@ -102,13 +100,12 @@ export const UserData = async (req, res) => {
   }
 };
 
-// update user (using JWT)
 export const UpdateUser = async (req, res) => {
   const { fullname, email, gender, dob } = req.body;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
-      req.user.userId, // Get userId from the JWT token
+      req.user.userId,
       { fullname, email, gender, Dob: dob },
       { new: true }
     );
@@ -233,7 +230,7 @@ export const driversnearby = async (req, res) => {
   const toRadians = (degrees) => degrees * (Math.PI / 180);
 
   const haversineDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // Radius of the Earth in kilometers
+    const R = 6371;
     const dLat = toRadians(lat2 - lat1);
     const dLon = toRadians(lon2 - lon1);
 
@@ -246,10 +243,11 @@ export const driversnearby = async (req, res) => {
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-    const distance = R * c; // Distance in kilometers
-    return distance; // Return distance in kilometers
+    const distance = R * c;
+    return distance;
   };
-
+  console.log("u", latitude, longitude);
+  console.log("d", latitude, longitude);
   const distance = haversineDistance(
     latitude,
     longitude,
@@ -274,16 +272,15 @@ export const driversnearby = async (req, res) => {
       },
       {
         $lookup: {
-          from: "drivers", // Look up the driver details
-          localField: "driver", // Field in Ambulance schema
-          foreignField: "_id", // Match to the driver collection's _id
-          as: "driverDetails", // Alias for the driver details
+          from: "drivers",
+          localField: "driver",
+          foreignField: "_id",
+          as: "driverDetails",
         },
       },
       {
-        $unwind: {
-          path: "$driverDetails", // Unwind driverDetails to make it a single object
-          preserveNullAndEmptyArrays: true,
+        $match: {
+          "driverDetails.isBooked": false,
         },
       },
       {
@@ -306,11 +303,10 @@ export const driverlocation = async (req, res) => {
       { fullname: 1, "location.coordinates": 1, _id: 0 }
     );
 
-    // Format the data so that it's more easily consumed by the frontend
     const formattedDrivers = drivers.map((driver) => ({
       fullname: driver.fullname,
-      latitude: driver.location.coordinates[0], // Latitude is the second element in the coordinates array
-      longitude: driver.location.coordinates[1], // Longitude is the first element
+      latitude: driver.location.coordinates[0],
+      longitude: driver.location.coordinates[1],
     }));
 
     console.log("Formatted Driver Data: ", formattedDrivers);

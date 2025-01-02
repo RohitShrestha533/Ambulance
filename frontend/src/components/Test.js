@@ -210,7 +210,7 @@ const Test = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Set Locations</Text>
+      <Text style={styles.header}>Choose Location</Text>
       <Text style={styles.label}>Current Location:</Text>
       <TouchableOpacity
         onPress={() => {

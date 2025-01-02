@@ -76,7 +76,7 @@ const Login = () => {
           }
           navigation.reset({
             index: 0,
-            // routes: [{ name: "DriverMain" }],
+            routes: [{ name: "DriverMain" }],
           });
         }
       } else {

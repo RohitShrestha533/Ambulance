@@ -82,7 +82,7 @@ export const driverRegister = async (req, res) => {
       hospital: hospitalId,
       location: {
         type: "Point", // Geospatial type
-        coordinates: location.coordinates, // Use the hospital's coordinates
+        coordinates: location.coordinates,
       },
     });
 
@@ -127,14 +127,12 @@ export const driverLogin = async (req, res) => {
   const { email, password } = req.body;
   let driver;
 
-  // Find driver by email
   driver = await Driver.findOne({ email: email });
 
   if (!driver) {
     return res.status(404).send({ message: "Driver not found" });
   }
 
-  // Compare password
   const isPasswordCorrect = await bcrypt.compare(password, driver.password);
 
   if (!isPasswordCorrect) {
@@ -179,13 +177,12 @@ export const DriverData = async (req, res) => {
   }
 };
 
-// update driver (using JWT)
 export const UpdateDriver = async (req, res) => {
   const { fullname, email, gender, dob } = req.body;
 
   try {
     const updatedDriver = await Driver.findByIdAndUpdate(
-      req.driver.driverId, // Get driverId from the JWT token
+      req.driver.driverId,
       { fullname, email, gender, Dob: dob },
       { new: true }
     );
@@ -212,7 +209,10 @@ export const driverbookingHistory = async (req, res) => {
     const driverId = req.driver.driverId;
     console.log("Fetching bookings for driver ID:", driverId);
 
-    const bookings = await Booking.find({ driverId, bookingstatus: "pending" })
+    const bookings = await Booking.find({
+      driverId,
+      bookingstatus: { $nin: ["completed", "cancelled"] },
+    })
       .sort({ createdAt: -1 })
       .populate({
         path: "userId",
@@ -220,12 +220,13 @@ export const driverbookingHistory = async (req, res) => {
       });
     res.json(bookings);
   } catch (error) {
-    // console.error("Error fetching booking history:", error);
     res.status(500).json({ message: "Failed to fetch booking history" });
   }
 };
 
 export const drivercancelBooking = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { bookingId } = req.body;
     const booking = await Booking.findById(bookingId);
@@ -233,42 +234,223 @@ export const drivercancelBooking = async (req, res) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
+    const driverId = booking.driverId;
 
+    if (!driverId) {
+      return res
+        .status(400)
+        .json({ message: "Driver information not found for this booking" });
+    }
     if (booking.bookingstatus !== "pending") {
       return res
         .status(400)
         .json({ message: "Only pending bookings can be cancelled" });
     }
 
-    booking.bookingstatus = "cancelled"; // or "cancelled"
+    booking.bookingstatus = "cancelled";
     await booking.save();
+    const driverUpdate = await Driver.findByIdAndUpdate(
+      driverId,
+      { isBooked: false },
+      { session, new: true }
+    );
+
+    if (!driverUpdate) {
+      throw new Error("Driver not found");
+    }
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.json({ message: "Booking cancelled successfully" });
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json({ message: "Failed to cancel booking" });
   }
 };
 
-export const confirmBooking = async (req, res) => {
+export const completeBooking = async (req, res) => {
+  let session; // Move session declaration outside the try block
   try {
-    const { bookingId } = req.body;
+    const driverId = req.driver.driverId;
+    const { bookingId, msg, latitude, longitude } = req.body; // Receiving latitude and longitude from the frontend
     const booking = await Booking.findById(bookingId);
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    if (booking.bookingstatus !== "pending") {
-      return res
-        .status(400)
-        .json({ message: "Only pending bookings can be confirmed" });
+    // console.log("agh", driverId);
+
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+      // Convert degrees to radians
+      const toRad = (value) => (value * Math.PI) / 180;
+
+      const R = 6371;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c; // Distance in km
+
+      return distance * 1000; // Convert to meters
+    };
+
+    const userLatitude = booking.userlocation.coordinates[1];
+    const userLongitude = booking.userlocation.coordinates[0];
+
+    const distance = calculateDistance(
+      userLatitude,
+      userLongitude,
+      latitude,
+      longitude
+    );
+
+    console.log(`Distance to destination: ${distance} meters`);
+    let price;
+    const initialDistance = booking.distance; // Initial distance (stored in the booking)
+    const totalDistance = initialDistance + distance; // Total distance for price calculation
+    console.log(totalDistance);
+    // Price calculation based on ambulance type
+    if (booking.ambulanceType === "Basic") {
+      price = totalDistance * 0.05;
+    } else if (booking.ambulanceType === "Advance") {
+      price = totalDistance * 0.1;
+    } else if (booking.ambulanceType === "Transport") {
+      price = totalDistance * 0.03;
+    } else {
+      price = totalDistance * 0.04;
     }
 
-    booking.bookingstatus = "confirmed"; // or "cancelled"
-    await booking.save();
+    console.log("Calculated price:", price);
 
-    res.json({ message: "Booking confirmed successfully" });
+    session = await mongoose.startSession();
+    session.startTransaction();
+
+    if (msg === "completed") {
+      if (booking.bookingstatus !== "picked") {
+        return res
+          .status(400)
+          .json({ message: "Only picked bookings can be completed" });
+      }
+      booking.bookingstatus = "completed";
+      booking.distance = totalDistance;
+      booking.price = price; // Save the calculated price
+      booking.destinationlocation = {
+        type: "Point",
+        coordinates: [longitude, latitude], // Save destination latitude and longitude
+      }; // Saving the destination location
+
+      await booking.save();
+
+      const driverUpdate = await Driver.findByIdAndUpdate(
+        driverId,
+        { isBooked: false },
+        { new: true }
+      );
+
+      if (!driverUpdate) {
+        return res.status(404).json({ message: "Driver not found" });
+      }
+
+      await session.commitTransaction();
+      session.endSession();
+      return res.json({ message: "Booking completed successfully" });
+    }
+
+    return res.status(400).json({ message: "Invalid status message" });
   } catch (error) {
+    if (session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
+    console.error("Error completing booking:", error);
+    res.status(500).json({ message: "Failed to complete booking" });
+  }
+};
+
+export const confirmBooking = async (req, res) => {
+  try {
+    const driverId = req.driver.driverId;
+    const { bookingId, msg } = req.body;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    if (msg === "confirmed") {
+      if (booking.bookingstatus !== "pending") {
+        return res
+          .status(400)
+          .json({ message: "Only pending bookings can be confirmed" });
+      }
+      booking.bookingstatus = "confirmed";
+      await booking.save();
+
+      const driverUpdate = await Driver.findByIdAndUpdate(
+        driverId,
+        { isBooked: true },
+        { new: true }
+      );
+
+      if (!driverUpdate) {
+        return res.status(404).json({ message: "Driver not found" });
+      }
+      await session.commitTransaction();
+      session.endSession();
+      return res.json({ message: "Booking confirmed successfully" });
+    }
+
+    if (msg === "picked") {
+      if (booking.bookingstatus !== "confirmed") {
+        return res
+          .status(400)
+          .json({ message: "Only confirmed bookings can be picked" });
+      }
+      booking.bookingstatus = "picked";
+      await booking.save();
+      return res.json({ message: "Patient picked successfully" });
+    }
+
+    if (msg === "completed") {
+      if (booking.bookingstatus !== "picked") {
+        return res
+          .status(400)
+          .json({ message: "Only picked bookings can be completed" });
+      }
+      booking.bookingstatus = "completed";
+      await booking.save();
+      const driverUpdate = await Driver.findByIdAndUpdate(
+        driverId,
+        { isBooked: false },
+        { new: true }
+      );
+
+      if (!driverUpdate) {
+        return res.status(404).json({ message: "Driver not found" });
+      }
+      await session.commitTransaction();
+      session.endSession();
+      return res.json({ message: "Booking completed successfully" });
+    }
+
+    return res.status(400).json({ message: "Invalid status message" });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error confirming booking:", error);
     res.status(500).json({ message: "Failed to confirm booking" });
   }
 };

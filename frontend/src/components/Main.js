@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Alert, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./HomeScreen";
 import UserProfile from "./UserProfile";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-
+import * as Location from "expo-location";
+import axios from "axios";
 const Tab = createBottomTabNavigator();
 
 const SOSButton = ({ onPress }) => (
@@ -14,6 +15,52 @@ const SOSButton = ({ onPress }) => (
     <Text style={{ color: "white" }}>SOS</Text>
   </TouchableOpacity>
 );
+let ip = "192.168.18.12";
+const bookAmbulance = async () => {
+  const requestLocationPermission = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === "granted") {
+      try {
+        const location = await Location.getCurrentPositionAsync({});
+        const { latitude, longitude } = location.coords;
+        try {
+          const token = await AsyncStorage.getItem("token");
+          if (!token) {
+            Alert.alert("Error", "No token found. Please login again.");
+            return;
+          }
+
+          console.log("Sending request to drivers-nearby ");
+          const response = await axios.post(
+            `http://${ip}:5000/sosbook`,
+            { latitude, longitude },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (response.status === 200) {
+            Alert.alert("Success", "Ambulance booked successfully!");
+          } else {
+            Alert.alert("Error", "Failed to book ambulance. Try again.");
+          }
+        } catch (error) {
+          Alert.alert("Error", "Failed to book ambulance.");
+          console.error("Booking Error:", error);
+        }
+      } catch (error) {
+        Alert.alert("Error", "Failed to fetch location.");
+        console.error("Location Error:", error);
+      }
+    } else {
+      Alert.alert(
+        "Permission Denied",
+        "Location permission is required to book an ambulance."
+      );
+    }
+  };
+
+  await requestLocationPermission();
+};
+
 const Main = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
@@ -23,9 +70,9 @@ const Main = () => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (token) {
-          setIsLoggedIn(true); // If token exists, the user is logged in
+          setIsLoggedIn(true);
         } else {
-          setIsLoggedIn(false); // No token, user is not logged in
+          setIsLoggedIn(false);
         }
       } catch (error) {
         console.error("Error checking login status", error);
@@ -34,14 +81,12 @@ const Main = () => {
     };
 
     checkLoginStatus();
-  }, []); // Empty dependency array ensures this runs once when the component mounts
-
-  // Handle Profile tab click, check login status
+  }, []);
   const handleProfileTabPress = () => {
     if (isLoggedIn) {
       navigation.navigate("UserProfile");
     } else {
-      navigation.navigate("Login"); // Redirect to login if not logged in
+      navigation.navigate("Login");
     }
   };
 
@@ -69,8 +114,8 @@ const Main = () => {
           component={UserProfile}
           listeners={{
             tabPress: (e) => {
-              e.preventDefault(); // Prevent default tab press behavior
-              handleProfileTabPress(); // Check login status before navigating
+              e.preventDefault();
+              handleProfileTabPress();
             },
           }}
           options={{
@@ -83,7 +128,23 @@ const Main = () => {
       </Tab.Navigator>
       <SOSButton
         onPress={() => {
-          alert("SOS Button Pressed!");
+          if (isLoggedIn) {
+            Alert.alert(
+              "Logout",
+              "SOS Button Pressed! Are you sure for Booking Ambulance?",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "OK",
+                  onPress: () => {
+                    bookAmbulance();
+                  },
+                },
+              ]
+            );
+          } else {
+            navigation.navigate("Login");
+          }
         }}
       />
     </View>

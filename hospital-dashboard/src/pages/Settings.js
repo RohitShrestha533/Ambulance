@@ -79,7 +79,7 @@ const Settings = () => {
 
       if (response.status === 200) {
         alert("Hospital data updated successfully");
-        setIsEditing(false); // Exit editing mode
+        setIsEditing(false);
       }
     } catch (error) {
       console.error("Error updating Hospital data:", error);

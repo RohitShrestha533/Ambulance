@@ -11,7 +11,7 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear any previous error
+    setError("");
     const adminData = { email, password };
 
     try {
@@ -67,7 +67,6 @@ const LoginPage = () => {
           Admin Login
         </Typography>
 
-        {/* Display error if exists */}
         {error && (
           <Typography color="error" variant="body2" align="center">
             {error}

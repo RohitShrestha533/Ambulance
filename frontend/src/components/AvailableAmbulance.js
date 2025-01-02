@@ -10,10 +10,13 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { useNavigation } from "@react-navigation/native";
 const AvailableAmbulance = ({ route }) => {
-  const { drivers, mylocation, destination, totaldistance } = route.params; // Destructure drivers from route params
+  const navigation = useNavigation();
+  const { drivers, mylocation, destination, totaldistance } = route.params;
   console.log("Available ambulances:", drivers);
   console.log("UserLocation:", mylocation);
+  console.log("totaldistance:", totaldistance);
   console.log("DestinationLocation:", destination);
   // let ip = "172.30.2.208";
   let ip = "192.168.18.12";
@@ -36,6 +39,7 @@ const AvailableAmbulance = ({ route }) => {
       if (!token) {
         throw new Error("No token found, please login again");
       }
+      // console.log("adda0", distance);
       const response = await fetch(`http://${ip}:5000/book-ambulance`, {
         method: "POST",
         headers: {
@@ -63,6 +67,7 @@ const AvailableAmbulance = ({ route }) => {
         "Booking Requested",
         `Booking successful! ID: ${data.bookingId}, Status: ${data.status}`
       );
+      navigation.navigate("Main");
     } catch (error) {
       console.error("Error booking ambulance:", error);
       Alert.alert("Error", "Unable to book ambulance. Please try again.");
@@ -72,17 +77,17 @@ const AvailableAmbulance = ({ route }) => {
   const renderDriverCard = ({ item }) => {
     const price =
       item.ambulanceType === "Advance"
-        ? totaldistance * 0.1
+        ? (totaldistance + item.distance) * 0.1
         : item.ambulanceType === "Basic"
-        ? totaldistance * 0.05
+        ? (totaldistance + item.distance) * 0.05
         : item.ambulanceType === "Transport"
-        ? totaldistance * 0.03
-        : 0; // Default to 0 if ambulance type is invalid
+        ? (totaldistance + item.distance) * 0.03
+        : 0;
 
     return (
       <View style={styles.card}>
         <Text style={styles.header}>Ambulance Details</Text>
-        <Text style={styles.header}>Price: {price.toFixed(2)}</Text>
+        <Text style={styles.header}>Price: Rs. {price.toFixed(2)}</Text>
         <Text style={styles.text}>Name: {item.driverDetails?.fullname}</Text>
         <Text style={styles.text}>
           Phone Number: {item.driverDetails?.phone}
@@ -92,7 +97,7 @@ const AvailableAmbulance = ({ route }) => {
         </Text>
         <Text style={styles.text}>Ambulance Type: {item.ambulanceType}</Text>
         <Text style={styles.text}>
-          Distance: {item.distance.toFixed(2)} meters
+          Ambulance is {(item.distance / 1000).toFixed(3)} Km Distance Away
         </Text>
         <TouchableOpacity
           style={styles.button}
@@ -101,7 +106,7 @@ const AvailableAmbulance = ({ route }) => {
               item._id,
               item.driver,
               item.hospital,
-              item.distance.toFixed(2),
+              (item.distance + totaldistance).toFixed(2),
               mylocation,
               destination,
               price.toFixed(2),
@@ -117,12 +122,18 @@ const AvailableAmbulance = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={drivers.ambulances}
-        keyExtractor={(item) => item._id}
-        renderItem={renderDriverCard}
-        contentContainerStyle={styles.listContent}
-      />
+      {drivers.ambulances.length === 0 ? (
+        <View style={styles.noAmbulanceContainer}>
+          <Text style={styles.noAmbulanceText}>No ambulances available</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={drivers.ambulances}
+          keyExtractor={(item) => item._id}
+          renderItem={renderDriverCard}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
     </View>
   );
 };
@@ -168,6 +179,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
     textAlign: "center",
+  },
+  noAmbulanceContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noAmbulanceText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "gray",
   },
 });
 

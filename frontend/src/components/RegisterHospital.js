@@ -12,20 +12,20 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 import axios from "axios";
+import { useNavigation } from "@react-navigation/native";
 import Login from "./Login";
 const RegisterHospital = () => {
   // let ip = "172.30.2.208";
   let ip = "192.168.18.12";
+
+  const navigation = useNavigation();
   const [hospitalName, setHospitalName] = useState("");
   const [registrationNumber, setRegistrationNumber] = useState("");
-  const [address, setAddress] = useState("");
   const [email, setEmail] = useState("");
   const [adminName, setAdminName] = useState("");
   const [adminContact, setAdminContact] = useState("");
   const [password, setPassword] = useState("");
   const [ambulanceCount, setAmbulanceCount] = useState("");
-  const [hospitalType, setHospitalType] = useState("");
-  const [operatingHours, setOperatingHours] = useState("");
   const [emergencyContact, setEmergencyContact] = useState("");
   const [coordinates, setCoordinates] = useState([27.1, 84]);
   const [showMap, setShowMap] = useState(false);
@@ -98,8 +98,6 @@ const RegisterHospital = () => {
       !adminName ||
       !adminContact ||
       !ambulanceCount ||
-      !hospitalType ||
-      !operatingHours ||
       !coordinates ||
       !emergencyContact
     ) {
@@ -110,14 +108,11 @@ const RegisterHospital = () => {
     const hospitalData = {
       hospitalName,
       registrationNumber,
-      address,
       email,
       adminName,
       adminContact,
       password,
       ambulanceCount,
-      hospitalType,
-      operatingHours,
       coordinates,
       emergencyContact,
     };
@@ -162,12 +157,7 @@ const RegisterHospital = () => {
           value={registrationNumber}
           onChangeText={setRegistrationNumber}
         />
-        <TextInput
-          style={styles.input}
-          placeholder="Address"
-          value={address}
-          onChangeText={setAddress}
-        />
+
         <Text style={styles.label}>Map Coordinates</Text>
 
         <TouchableOpacity
@@ -229,18 +219,6 @@ const RegisterHospital = () => {
           value={ambulanceCount}
           keyboardType="numeric"
           onChangeText={setAmbulanceCount}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Hospital Type"
-          value={hospitalType}
-          onChangeText={setHospitalType}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Operating Hours"
-          value={operatingHours}
-          onChangeText={setOperatingHours}
         />
         <TextInput
           style={styles.input}

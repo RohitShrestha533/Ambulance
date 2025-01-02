@@ -13,7 +13,7 @@ const Register = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear any previous error
+    setError("");
     const adminData = { email, password, phone, confirmpassword };
 
     try {
@@ -64,7 +64,6 @@ const Register = () => {
           Admin Login
         </Typography>
 
-        {/* Display error if exists */}
         {error && (
           <Typography color="error" variant="body2" align="center">
             {error}

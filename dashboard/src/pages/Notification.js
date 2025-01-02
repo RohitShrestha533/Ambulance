@@ -44,11 +44,8 @@ const Notification = ({ setNotificationCount }) => {
             <th scope="col">Registration Number</th>
             <th scope="col">Admin Name</th>
             <th scope="col">Admin Number</th>
-            <th scope="col">Address</th>
             <th scope="col">Email</th>
             <th scope="col">Ambulance</th>
-            <th scope="col">Hospital Type</th>
-            <th scope="col">Operating Hours</th>
             <th scope="col">Coordinates</th>
             <th scope="col">Emergency Contact</th>
             <th scope="col">Action</th>
@@ -67,11 +64,8 @@ const Notification = ({ setNotificationCount }) => {
                 <td>{hospital.registrationNumber}</td>
                 <td>{hospital.adminName}</td>
                 <td>{hospital.adminContact}</td>
-                <td>{hospital.address}</td>
                 <td>{hospital.email}</td>
                 <td>{hospital.ambulanceCount}</td>
-                <td>{hospital.hospitalType}</td>
-                <td>{hospital.operatingHours}</td>
                 <td>
                   {hospital.location.coordinates[0]},
                   {hospital.location.coordinates[1]}
@@ -80,7 +74,7 @@ const Notification = ({ setNotificationCount }) => {
                 <td>
                   <button
                     className="btn btn-success"
-                    onClick={() => handleApprove(hospital._id)} // Use an anonymous function here
+                    onClick={() => handleApprove(hospital._id)}
                   >
                     Approve
                   </button>

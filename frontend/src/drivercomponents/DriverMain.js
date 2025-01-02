@@ -40,9 +40,7 @@ const DriverMain = () => {
     };
 
     checkLoginStatus();
-  }, []); // Empty dependency array ensures this runs once when the component mounts
-
-  // Handle Profile tab click, check login status
+  }, []);
   const handleProfileTabPress = () => {
     if (isLoggedIn) {
       navigation.navigate("DriverProfile");
@@ -73,8 +71,8 @@ const DriverMain = () => {
           component={DriverProfile}
           listeners={{
             tabPress: (e) => {
-              e.preventDefault(); // Prevent default tab press behavior
-              handleProfileTabPress(); // Check login status before navigating
+              e.preventDefault();
+              handleProfileTabPress();
             },
           }}
           options={{

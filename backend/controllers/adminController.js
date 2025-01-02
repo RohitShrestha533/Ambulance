@@ -6,7 +6,6 @@ import { Admin } from "../models/admin.js";
 import jwt from "jsonwebtoken";
 import { Booking } from "../models/Booking.js";
 
-//register
 export const adminRegister = async (req, res) => {
   const { email, phone, password, confirmpassword } = req.body;
 
@@ -76,11 +75,10 @@ export const adminLogin = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      // console.log("Generated Token:", token); // Logs the token if successful
       res.status(200).send({
         status: 200,
         message: "Login successful",
-        token, // Send the token in the response
+        token,
       });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
@@ -144,49 +142,46 @@ export const revenuechart = async (req, res) => {
     const revenueData = await Booking.aggregate([
       {
         $match: {
-          bookingstatus: "pending", // Filter bookings that are confirmed
+          bookingstatus: "pending",
         },
       },
       {
         $lookup: {
-          from: "drivers", // Lookup to get driver details
-          localField: "driverId", // The driverId in the booking
-          foreignField: "_id", // The _id in the driver collection
-          as: "driverDetails", // The resulting driver details will be placed in the "driverDetails" array
+          from: "drivers",
+          localField: "driverId",
+          foreignField: "_id",
+          as: "driverDetails",
         },
       },
       {
-        $unwind: "$driverDetails", // Unwind the driverDetails array to get a single driver object
+        $unwind: "$driverDetails",
       },
       {
         $group: {
-          _id: "$driverDetails.hospital", // Group by the hospitalId of the driver
-          totalPrice: { $sum: "$price" }, // Sum the price of all confirmed bookings for each hospital
+          _id: "$driverDetails.hospital",
+          totalPrice: { $sum: "$price" },
         },
       },
       {
         $lookup: {
-          from: "hospitals", // Lookup to get hospital details
-          localField: "_id", // The hospitalId from the driver collection
-          foreignField: "_id", // The _id in the hospital collection
-          as: "hospitalDetails", // The resulting hospital details will be placed in the "hospitalDetails" array
+          from: "hospitals",
+          localField: "_id",
+          foreignField: "_id",
+          as: "hospitalDetails",
         },
       },
       {
-        $unwind: "$hospitalDetails", // Unwind the hospitalDetails array to get a single hospital object
+        $unwind: "$hospitalDetails",
       },
       {
         $project: {
-          hospitalName: "$hospitalDetails.hospitalName", // Ensure this field exists in your hospitals collection
-          totalPrice: 1, // Include the total price in the result
+          hospitalName: "$hospitalDetails.hospitalName",
+          totalPrice: 1,
         },
       },
     ]);
-
-    // Return the result as a response
     res.status(200).json(revenueData);
   } catch (err) {
-    // Handle any errors
     console.error("Error fetching revenue data:", err);
     res
       .status(500)

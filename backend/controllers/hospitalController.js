@@ -84,28 +84,21 @@ export const hospitalRegister = async (req, res) => {
   const {
     hospitalName,
     registrationNumber,
-    address,
     email,
     adminName,
     adminContact,
     password,
     ambulanceCount,
-    hospitalType,
-    operatingHours,
     coordinates,
     emergencyContact,
   } = req.body;
 
-  // console.log("Received data:", req.body);
-
-  // Validation
   const phoneRegex = /^[0-9]{10}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (
     !hospitalName ||
     !registrationNumber ||
-    !address ||
     !email ||
     !adminName ||
     !adminContact ||
@@ -155,24 +148,18 @@ export const hospitalRegister = async (req, res) => {
         message: "Coordinates should be numbers.",
       });
     }
-    // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Default approval status
     const approved = "no";
 
-    // Create hospital record
     const newHospital = await Hospital.create({
       hospitalName,
       registrationNumber,
-      address,
       email,
       adminName,
       adminContact,
       password: hashedPassword,
       ambulanceCount,
-      hospitalType,
-      operatingHours,
       location: { type: "Point", coordinates: [longitude, latitude] },
       emergencyContact,
       approved,
@@ -181,7 +168,6 @@ export const hospitalRegister = async (req, res) => {
     res.status(200).send({
       status: "ok",
       message: "Hospital registered successfully.",
-      // hospitalId: newHospital._id,
     });
   } catch (error) {
     console.error("Error registering hospital:", error.message);
@@ -227,11 +213,10 @@ export const hospitalLogin = async (req, res) => {
           expiresIn: "1h",
         }
       );
-      // console.log("Generated Token:", token); // Logs the token if successful
       res.status(200).send({
         status: 200,
         message: "Login successful",
-        token, // Send the token in the response
+        token,
       });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
@@ -251,19 +236,13 @@ export const hospitaldriverData = async (req, res) => {
   const hospitalId = req.hospital.hospitalId;
 
   try {
-    // Fetch drivers and populate the ambulance field to get the ambulanceType
     const drivers = await Driver.find({ hospital: hospitalId })
-      .populate("ambulance", "ambulanceType") // Populate ambulance and select ambulanceType
+      .populate("ambulance", "ambulanceType")
       .exec();
 
-    // if (!drivers || drivers.length === 0) {
-    //   return res.status(404).send({ message: "No drivers found" });
-    // }
-
-    // Send response with drivers including ambulanceType
     const driverDataWithAmbulanceType = drivers.map((driver) => ({
       ...driver.toObject(),
-      ambulanceType: driver.ambulance ? driver.ambulance.ambulanceType : "N/A", // Ensure ambulanceType is included
+      ambulanceType: driver.ambulance ? driver.ambulance.ambulanceType : "N/A",
     }));
 
     res.status(200).send({ drivers: driverDataWithAmbulanceType });
@@ -306,7 +285,6 @@ export const hospitalUpdateDriver = async (req, res) => {
   const { driverId } = req.params;
   const { fullname, phone, ambulanceType, gender } = req.body;
 
-  // Ensure required fields are provided
   if (!fullname || !phone || !gender || !ambulanceType) {
     return res.status(400).json({ error: "Required fields are missing" });
   }
@@ -316,14 +294,12 @@ export const hospitalUpdateDriver = async (req, res) => {
   try {
     session.startTransaction();
 
-    // Update the driver's information
     const driver = await Driver.findOneAndUpdate(
       { _id: driverId, hospital: hospitalId },
       { fullname, phone, gender },
       { new: true }
     );
 
-    // If the driver is not found or not linked to the correct hospital
     if (!driver) {
       await session.abortTransaction();
       return res.status(404).json({
@@ -331,14 +307,12 @@ export const hospitalUpdateDriver = async (req, res) => {
       });
     }
 
-    // Update the ambulance information linked to the driver
     const ambulance = await Ambulance.findOneAndUpdate(
-      { driver: driverId }, // Linking to the driver's ID
+      { driver: driverId },
       { ambulanceType },
       { new: true }
     );
 
-    // If no ambulance is found or the update fails
     if (!ambulance) {
       await session.abortTransaction();
       return res
@@ -346,24 +320,20 @@ export const hospitalUpdateDriver = async (req, res) => {
         .json({ error: "No ambulance found for this driver" });
     }
 
-    // Commit the transaction to persist both changes
     await session.commitTransaction();
 
-    // Return the updated driver and ambulance data
     res.status(200).json({
       message: "Driver and ambulance updated successfully",
       driver,
       ambulance,
     });
   } catch (error) {
-    // Handle any other errors and ensure session is aborted
     console.error("Error updating hospital's driver information:", error);
     await session.abortTransaction();
     res.status(500).json({
       error: "Failed updating driver's information or ambulance",
     });
   } finally {
-    // End the session regardless of success or failure
     session.endSession();
   }
 };

@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Platform,
+  Alert,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const DriverHistory = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(""); // Added error state
 
   // Set your IP address
   let ip = "192.168.18.12";
@@ -29,7 +31,7 @@ const DriverHistory = () => {
         if (!token) {
           throw new Error("No token found, please login again");
         }
-
+        // console.log("tko ", token);
         const response = await axios.get(
           `http://${ip}:5000/api/getAllBookings`,
           {
@@ -39,13 +41,16 @@ const DriverHistory = () => {
             withCredentials: true,
           }
         );
-
+        // console.log("a", response.data);
         if (response.status !== 200) {
           throw new Error("Failed to fetch bookings");
         }
         setBookings(response.data);
+        setLoading(false);
       } catch (error) {
         setLoading(false);
+        setError("Failed to load bookings. Please try again.");
+        console.error(error);
       }
     };
 
@@ -55,25 +60,11 @@ const DriverHistory = () => {
   const renderBookingItem = ({ item }) => {
     if (!item) return null;
 
-    const {
-      userlocation,
-      destinationlocation,
-      _id, // Use _id here
-      price,
-      bookingstatus,
-    } = item;
+    const { _id, price, bookingstatus } = item;
 
     return (
       <View style={styles.bookingItem}>
         <Text style={styles.bookingTitle}>Booking ID: {_id}</Text>
-        {/* <Text>
-          User Location:{" "}
-          {`Longitude: ${userlocation.coordinates[0]}, Latitude: ${userlocation.coordinates[1]}`}
-        </Text>
-        <Text>
-          Destination Location:{" "}
-          {`Longitude: ${destinationlocation.coordinates[0]}, Latitude: ${destinationlocation.coordinates[1]}`}
-        </Text> */}
         <Text>Status: {bookingstatus}</Text>
         <Text>Price: ${price}</Text>
       </View>
@@ -86,12 +77,14 @@ const DriverHistory = () => {
 
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
+      ) : error ? (
+        <Text>{error}</Text>
       ) : bookings.length === 0 ? (
         <Text>No bookings available</Text>
       ) : (
         <FlatList
           data={bookings}
-          keyExtractor={(item) => item._id.toString()} // Use a unique key for each item
+          keyExtractor={(item) => item._id.toString()}
           renderItem={renderBookingItem}
         />
       )}

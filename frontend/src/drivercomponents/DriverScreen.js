@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import * as Location from "expo-location";
 const DriverScreen = () => {
   const [bookingHistory, setBookingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +77,7 @@ const DriverScreen = () => {
       Alert.alert("Error", "Failed to cancel booking");
     }
   };
-  const handleConfirm = async (bookingId) => {
+  const handleConfirm = async (bookingId, msg) => {
     try {
       const token = await AsyncStorage.getItem("drivertoken");
       if (!token) {
@@ -91,7 +91,7 @@ const DriverScreen = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ bookingId }),
+        body: JSON.stringify({ bookingId, msg }),
       });
 
       if (!response.ok) {
@@ -106,6 +106,55 @@ const DriverScreen = () => {
       console.error("Error confirming booking:", error);
       Alert.alert("Error", "Failed to confirm booking");
     }
+  };
+  const handleComplete = async (bookingId, msg) => {
+    const requestLocationPermission = async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === "granted") {
+        try {
+          const location = await Location.getCurrentPositionAsync({});
+          const { latitude, longitude } = location.coords;
+          try {
+            const token = await AsyncStorage.getItem("drivertoken");
+            if (!token) {
+              Alert.alert("Error", "No token found, please login again");
+              return;
+            }
+            console.log(latitude, longitude);
+            const response = await fetch(`http://${ip}:5000/completeBooking`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ bookingId, msg, latitude, longitude }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to confirm the booking");
+            }
+
+            const data = await response.json();
+            Alert.alert("Success", data.message);
+
+            fetchBookingHistory();
+          } catch (error) {
+            console.error("Error confirming booking:", error);
+            Alert.alert("Error", "Failed to confirm booking");
+          }
+        } catch (error) {
+          Alert.alert("Error", "Failed to fetch location.");
+          console.error("Location Error:", error);
+        }
+      } else {
+        Alert.alert(
+          "Permission Denied",
+          "Location permission is required to book an ambulance."
+        );
+      }
+    };
+
+    await requestLocationPermission();
   };
 
   if (loading) {
@@ -132,14 +181,34 @@ const DriverScreen = () => {
       <Text style={styles.text}>
         Distance: {item.distance.toFixed(2)} meters
       </Text>
-      <Text style={styles.text}>Price: Rs {item.price.toFixed(2)}</Text>
+      <Text style={styles.text}>Price: Rs {item.price}</Text>
+      {/* <Text style={styles.text}>Price: Rs {item.price.toFixed(2)}</Text> */}
       <Text style={styles.text}>Status: {item.bookingstatus}</Text>
-      <TouchableOpacity
-        style={styles.confirmButton}
-        onPress={() => handleConfirm(item._id)}
-      >
-        <Text style={styles.ButtonText}>Confirm</Text>
-      </TouchableOpacity>
+
+      {item.bookingstatus === "confirmed" && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => handleConfirm(item._id, "picked")}
+        >
+          <Text style={styles.ButtonText}>Picked Up ?</Text>
+        </TouchableOpacity>
+      )}
+      {item.bookingstatus === "picked" && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => handleComplete(item._id, "completed")}
+        >
+          <Text style={styles.ButtonText}>Completed ?</Text>
+        </TouchableOpacity>
+      )}
+      {item.bookingstatus === "pending" && (
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => handleConfirm(item._id, "confirmed")}
+        >
+          <Text style={styles.ButtonText}>Confirm</Text>
+        </TouchableOpacity>
+      )}
       {item.bookingstatus === "pending" && (
         <TouchableOpacity
           style={styles.cancelButton}
