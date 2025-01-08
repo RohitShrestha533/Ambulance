@@ -9,6 +9,7 @@ import UserProfile from "./src/components/UserProfile";
 import Account from "./src/components/Account";
 import Map from "./src/components/Map";
 import TestMap from "./src/components/TestMap";
+import Nearhospital from "./src/components/Nearhospital";
 import AccountUpdate from "./src/components/AccountUpdate";
 import History from "./src/components/History";
 import Main from "./src/components/Main";
@@ -44,6 +45,7 @@ export default function App() {
 
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
         <Stack.Screen name="Test" component={Test} />
+        <Stack.Screen name="Nearhospital" component={Nearhospital} />
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="TestMap" component={TestMap} />
         <Stack.Screen name="Main" component={Main} />

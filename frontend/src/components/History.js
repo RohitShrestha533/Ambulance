@@ -22,6 +22,7 @@ const History = ({ userId }) => {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         Alert.alert("Error", "No token found, please login again");
+
         setLoading(false);
         return;
       }

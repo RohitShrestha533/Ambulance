@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  Alert,
-  Platform,
-} from "react-native";
+import { View, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
@@ -18,12 +7,80 @@ import DriverProfile from "./DriverProfile";
 import DriverScreen from "./DriverScreen";
 const Tab = createBottomTabNavigator();
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
 import { useNavigation } from "@react-navigation/native";
-
+import axios from "axios";
 const DriverMain = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState(null);
+  const ip = "192.168.18.12"; // Set your server's IP address
 
+  const getCurrentLocation = async () => {
+    try {
+      console.log("Requesting location permission...");
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        alert("Permission to access location was denied");
+        console.log("Location permission denied");
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      console.log("Location fetched:", location.coords);
+
+      // Update location state
+      setLocation(location.coords);
+      updateLocationInDB();
+    } catch (error) {
+      console.error("Error getting location:", error);
+    }
+  };
+  const updateLocationInDB = async () => {
+    if (!location) {
+      console.log("no location");
+      return;
+    }
+    console.log(
+      "Updating location to server:",
+      location.latitude,
+      location.longitude
+    );
+
+    setLoading(true);
+
+    try {
+      const token = await AsyncStorage.getItem("drivertoken");
+      if (!token) {
+        throw new Error("No token found, please login again");
+      }
+      console.log("ho", location.latitude, location.longitude);
+      const response = await axios.post(
+        `http://${ip}:5000/updateDriverLocation`,
+        {
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Location updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating location:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
@@ -48,6 +105,18 @@ const DriverMain = () => {
       navigation.navigate("Login"); // Redirect to login if not logged in
     }
   };
+
+  useEffect(() => {
+    getCurrentLocation();
+
+    const interval = setInterval(() => {
+      console.log("Fetching location...");
+      getCurrentLocation(); // Fetch new location every minute
+    }, 60000);
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, []); // Empty dependency array ensures this runs only once when the component is mounted
+
   return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator

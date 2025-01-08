@@ -15,6 +15,7 @@ import {
   cancelBooking,
   sosbook,
 } from "../controllers/bookingcontroller.js";
+import { getNearbyHospitals } from "../controllers/hospitalController.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
 const router = express.Router();
 
@@ -29,6 +30,7 @@ router.post("/userRegister", userRegister);
 router.post("/userLogin", userLogin);
 router.post("/userLogout", userLogout);
 
+router.get("/getNearbyHospitals", getNearbyHospitals);
 router.get("/UserData", authenticateJWT, UserData);
 router.put("/UpdateUser", authenticateJWT, UpdateUser);
 router.post("/UpdateUserPassword", authenticateJWT, UpdateUserPassword);

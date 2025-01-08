@@ -337,3 +337,69 @@ export const hospitalUpdateDriver = async (req, res) => {
     session.endSession();
   }
 };
+// export const getNearbyHospitals = async (req, res) => {
+//   try {
+//     const { latitude, longitude } = req.query;
+//     console.log(" ", latitude, longitude);
+//     if (!latitude || !longitude) {
+//       return res
+//         .status(400)
+//         .json({ error: "Latitude and Longitude are required" });
+//     }
+
+//     const lat = parseFloat(latitude);
+//     const lon = parseFloat(longitude);
+
+//     const hospitals = await Hospital.aggregate([
+//       {
+//         $geoNear: {
+//           near: { type: "Point", coordinates: [lon, lat] },
+//           distanceField: "distance",
+//           spherical: true,
+//         },
+//       },
+//     ]);
+
+//     return res.json(hospitals);
+//   } catch (error) {
+//     console.error("Error fetching nearby hospitals:", error);
+//     res.status(500).json({ error: "Failed to fetch nearby hospitals" });
+//   }
+// };
+
+export const getNearbyHospitals = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.query;
+    console.log("Latitude:", latitude, "Longitude:", longitude);
+
+    if (!latitude || !longitude) {
+      return res
+        .status(400)
+        .json({ error: "Latitude and Longitude are required" });
+    }
+
+    const lat = parseFloat(latitude);
+    const lon = parseFloat(longitude);
+
+    const hospitals = await Hospital.aggregate([
+      {
+        $geoNear: {
+          near: { type: "Point", coordinates: [lat, lon] },
+          distanceField: "distance", // Distance from the point
+          spherical: true,
+        },
+      },
+    ]);
+
+    // If you want to format the distance or add it in a specific way
+    const hospitalsWithDistance = hospitals.map((hospital) => ({
+      ...hospital,
+      distance: hospital.distance.toFixed(2), // Format distance (optional)
+    }));
+
+    return res.json(hospitalsWithDistance); // Send hospitals along with distance
+  } catch (error) {
+    console.error("Error fetching nearby hospitals:", error);
+    res.status(500).json({ error: "Failed to fetch nearby hospitals" });
+  }
+};

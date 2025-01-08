@@ -281,8 +281,6 @@ export const completeBooking = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // console.log("agh", driverId);
-
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
       // Convert degrees to radians
       const toRad = (value) => (value * Math.PI) / 180;
@@ -452,5 +450,39 @@ export const confirmBooking = async (req, res) => {
     session.endSession();
     console.error("Error confirming booking:", error);
     res.status(500).json({ message: "Failed to confirm booking" });
+  }
+};
+
+export const updateDriverLocation = async (req, res) => {
+  const driverId = req.driver.driverId;
+  const { latitude, longitude } = req.body;
+
+  if (!latitude || !longitude) {
+    return res
+      .status(400)
+      .json({ message: "Latitude and longitude are required" });
+  }
+  try {
+    const driver = await Driver.findOneAndUpdate(
+      driverId, // Use driver ID to identify the correct driver
+      {
+        $set: {
+          location: {
+            type: "Point",
+            coordinates: [longitude, latitude], // Save longitude, latitude in that order
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    res.status(200).json({ message: "Location updated successfully", driver });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

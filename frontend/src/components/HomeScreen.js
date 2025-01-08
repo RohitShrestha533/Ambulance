@@ -25,7 +25,12 @@ const HomeScreen = () => {
 
     checkLoginStatus();
   }, []);
-
+  const nearhospital = () => {
+    navigation.navigate("Nearhospital");
+  };
+  const userhistory = () => {
+    navigation.navigate("History");
+  };
   const handleBookAmbulance = () => {
     if (isLoggedIn) {
       navigation.navigate("Test");
@@ -54,14 +59,14 @@ const HomeScreen = () => {
           <Text style={styles.cardText}>Emergency Call</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={nearhospital}>
           <Ionicons name="business" size={40} color="red" />
           <Text style={styles.cardText}>
             <Text style={{ fontWeight: "bold" }}>Nearby</Text> Hospitals
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={userhistory}>
           <Ionicons name="time" size={40} color="red" />
           <Text style={styles.cardText}>Medical History</Text>
         </TouchableOpacity>

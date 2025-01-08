@@ -11,6 +11,7 @@ import {
   drivercancelBooking,
   confirmBooking,
   completeBooking,
+  updateDriverLocation,
 } from "../controllers/driverController.js";
 import {
   hospitalRegister,
@@ -46,6 +47,7 @@ router.post("/drivercancelBooking", driverJWT, drivercancelBooking);
 router.post("/confirmBooking", driverJWT, confirmBooking);
 router.post("/completeBooking", driverJWT, completeBooking);
 router.get("/api/getAllBookings", driverJWT, getAllBookings);
+router.post("/updateDriverLocation", driverJWT, updateDriverLocation);
 
 router.post("/api/hospitals/approve/:hospitalId", approveHospital);
 router.get("/api/getUnverifiedHospitals", getUnverifiedHospitals);
