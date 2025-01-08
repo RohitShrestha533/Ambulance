@@ -1,5 +1,3 @@
-![Logo](https://img.atom.com/story_images/visual_images/1671197546-750x450.jpg?class=show)
-
 ![AmbuTrack Logo](./frontend/assets/AmbuTrackLogo.png "AmbuTrack Logo")
 
 # AmbuTrack
