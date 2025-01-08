@@ -1,58 +1,59 @@
-AmbuTrack
+![Logo](https://img.atom.com/story_images/visual_images/1671197546-750x450.jpg?class=show)
 
-Efficient and Transparent Ambulance Booking System
+# AmbuTrack
+
+**Efficient and Transparent Ambulance Booking System**
 
 AmbuTrack provides a seamless platform for booking ambulances, ensuring quick response times and transparent operations with real-time tracking.
 
-Get Started
+## Get Started
 
 AmbuTrack is a technology-driven solution that connects users with nearby ambulances. Leveraging real-time mapping and efficient management, it improves response times during emergencies.
 
-Key Components
+## Features
 
-AmbuTrack Mobile Application
+- **User Authentication**: Secure login using JWT.
 
-Built using React Native for a seamless user experience on mobile devices.
+- **Hospital Registration**: Hospitals can register and wait for admin approval.
 
-Features include booking requests, real-time location tracking, and booking history.
+- **Admin Dashboard**: Admin can approve hospitals and oversee system operations.
 
-Admin Dashboard
+- **Hospital Dashboard**: Hospitals can add ambulance and driver details after approval.
 
-Developed with Node.js and Express.js for backend management.
+- **Driver Login**: Drivers can log in to the mobile application to receive booking details.
 
-Admin functionalities include:
+- **Real-Time Mapping**: Interactive maps using Leaflet for tracking and locating ambulances.
 
-Approving hospital registrations.
+- **Booking Management**: Users can book ambulances based on their location.
 
-Managing ambulance and driver details.
+## Technology Stack
 
-Real-Time Mapping
+### Frontend
 
-Leaflet integration for real-time ambulance tracking and location services.
+- **React Native**: For building the mobile application.
+- **Leaflet**: For interactive maps and location tracking.
 
-Features
+### Backend
 
-User Authentication: Secure login using JWT.
+- **Node.js**: Backend runtime environment.
+- **Express.js**: Framework for building RESTful APIs.
+- **MongoDB**: Database for storing application data.
 
-Hospital Registration: Hospitals register and await admin approval.
+### Authentication
 
-Admin Dashboard: Manage hospitals, ambulances, and drivers.
+- **JWT (JSON Web Token)**: For secure authentication.
 
-Driver Login: Dedicated access for drivers to receive booking details.
+## Authors
 
-Real-Time Tracking: Track ambulances using interactive maps.
+- **Mahima Shrestha**
 
-Booking Management: Users can book ambulances based on their current location or select the location.
+- **Rohit Shrestha**
 
-Authors
-Mahima Shrestha
-Rohit Shrestha
-Wishong lama
+- **Wishong Lama**
 
-Related
+## Related
 
-Supported Platforms
+### Supported Platforms
 
-Mobile application compatible with both Android and iOS devices.
-
-Web-based admin dashboard accessible via modern browsers.
+- Mobile application compatible with both Android and iOS devices.
+- Web-based admin dashboard accessible via modern browsers.
