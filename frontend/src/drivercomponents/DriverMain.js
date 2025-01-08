@@ -15,7 +15,8 @@ const DriverMain = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
   const [location, setLocation] = useState(null);
-  const ip = "192.168.18.12"; // Set your server's IP address
+  const ip = "172.30.3.131"; // Set your server's IP address
+  // const ip = "192.168.18.12"; // Set your server's IP address
 
   const getCurrentLocation = async () => {
     try {

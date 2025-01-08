@@ -16,7 +16,8 @@ const Nearhospital = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [location, setLocation] = useState(null);
-  let ip = "192.168.18.12";
+  let ip = "172.30.3.131";
+  // let ip = "192.168.18.12";
 
   const getCurrentLocation = async () => {
     try {

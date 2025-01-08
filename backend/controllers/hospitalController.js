@@ -337,36 +337,6 @@ export const hospitalUpdateDriver = async (req, res) => {
     session.endSession();
   }
 };
-// export const getNearbyHospitals = async (req, res) => {
-//   try {
-//     const { latitude, longitude } = req.query;
-//     console.log(" ", latitude, longitude);
-//     if (!latitude || !longitude) {
-//       return res
-//         .status(400)
-//         .json({ error: "Latitude and Longitude are required" });
-//     }
-
-//     const lat = parseFloat(latitude);
-//     const lon = parseFloat(longitude);
-
-//     const hospitals = await Hospital.aggregate([
-//       {
-//         $geoNear: {
-//           near: { type: "Point", coordinates: [lon, lat] },
-//           distanceField: "distance",
-//           spherical: true,
-//         },
-//       },
-//     ]);
-
-//     return res.json(hospitals);
-//   } catch (error) {
-//     console.error("Error fetching nearby hospitals:", error);
-//     res.status(500).json({ error: "Failed to fetch nearby hospitals" });
-//   }
-// };
-
 export const getNearbyHospitals = async (req, res) => {
   try {
     const { latitude, longitude } = req.query;

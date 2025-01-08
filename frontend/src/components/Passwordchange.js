@@ -23,8 +23,8 @@ const Passwordchange = () => {
   const [fullname, setFullname] = useState("");
   const [email, setEmail] = useState("");
 
-  // let ip = "172.30.2.208";
-  let ip = "192.168.18.12";
+  let ip = "172.30.3.131";
+  // let ip = "192.168.18.12";
 
   useEffect(() => {
     const fetchUserData = async () => {
