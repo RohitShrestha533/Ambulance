@@ -7,7 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const navigation = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,12 +17,12 @@ const LoginPage = () => {
         email,
         password,
       });
-      const { status, message, token } = response.data;
+      const { status, message, token, name } = response.data;
       console.log("token", token);
       if (status === 200) {
         localStorage.setItem("hospitaltoken", token);
         alert("Login successful");
-        navigate("/navs");
+        navigation("/navs", { replace: true, state: { name } });
       } else {
         setError(message);
       }

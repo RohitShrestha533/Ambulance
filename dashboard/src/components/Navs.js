@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import RevenuePieChart from "../components/RevenuePieChart";
+// import RevenuePieChart from "../components/RevenuePieChart";
 import Setting from "../pages/Settings";
+import Dash from "./Dash";
 import Notification from "../pages/Notification";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Link } from "react-router-dom";
 
 const Navs = () => {
   const navigate = useNavigate();
@@ -54,7 +54,8 @@ const Navs = () => {
   const renderContent = () => {
     switch (activeContent) {
       case "Dashboard":
-        return <RevenuePieChart />;
+        // return <RevenuePieChart />;
+        return <Dash />;
       case "Notification":
         return <Notification setNotificationCount={setNotificationCount} />;
       case "Setting":
@@ -70,69 +71,92 @@ const Navs = () => {
   };
 
   return (
-    <div>
-      <nav
-        className="navbar navbar-expand-lg navbar-dark "
-        style={{ height: "90px", backgroundColor: "red" }}
-      >
-        <div className="container-fluid p-5">
-          <Link className="navbar-brand fs-2" to="/Navs">
-            Admin Dashboard
-          </Link>
-          <div className="d-flex">
-            <button className="btn btn-primary" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <div className="d-flex">
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: "#f9f9f9",
+      }}
+    >
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        {/* Sidebar */}
         <div
-          className="bg-light"
+          className="d-flex flex-column "
           style={{
-            width: "200px",
-            minHeight: "100vh",
+            width: "16%",
+            height: "100%",
+            backgroundColor: "white",
             paddingTop: "20px",
-            borderRight: "1px solid #ddd",
+            justifyContent: "space-between",
           }}
         >
           <ul className="nav flex-column">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                height: "50px",
+                fontSize: "larger", // Correct way to use font size
+                fontWeight: "bold",
+              }}
+            >
+              <button
+                style={{
+                  fontSize: "larger",
+                  fontWeight: 500,
+                  textDecoration: "none",
+                  border: "none",
+                  background: "none",
+                }}
+                onClick={() => setActiveContent("Dashboard")}
+              >
+                Super Admin
+              </button>
+              {/* <i className="bi bi-list pe-3"></i> */}
+            </div>
+            <hr />
             <li
-              className="nav-item ps-4"
+              className="nav-item"
               onClick={() => setActiveContent("Dashboard")}
             >
-              <button className="nav-link text-dark btn btn-link">
+              <button className="nav-link  btn btn-link">
                 <i className="bi bi-house-door-fill pe-2"></i> Dashboard
               </button>
             </li>
-            <hr />
+
             <li
-              className="nav-item ps-4"
+              className="nav-item"
               onClick={() => setActiveContent("Notification")}
             >
-              <button className="nav-link text-dark btn btn-link">
+              <button className="nav-link  btn btn-link">
                 <i className="bi bi-bell-fill pe-1"></i> Notification
                 {notificationCount > 0 && (
                   <span className="badge bg-danger">{notificationCount}</span>
                 )}
               </button>
             </li>
-            <hr />
+
             <li
-              className="nav-item ps-4"
+              className="nav-item"
               onClick={() => setActiveContent("Setting")}
             >
-              <button className="nav-link text-dark btn btn-link">
+              <button className="nav-link  btn btn-link">
                 <i className="bi bi-gear-fill pe-2"></i> Setting
               </button>
             </li>
-            <hr />
           </ul>
+          <div className="p-3">
+            <button className="btn btn-danger w-100" onClick={handleLogout}>
+              <i className="bi bi-box-arrow-right pe-2"></i>
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Main Content */}
-        <div className="p-4" style={{ flex: 1 }}>
+        <div className="p-4" style={{ flex: 1, overflowY: "auto" }}>
           {renderContent()}
         </div>
       </div>

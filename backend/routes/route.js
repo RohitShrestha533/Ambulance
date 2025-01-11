@@ -23,6 +23,7 @@ import {
   hospitaldriverData,
   UpdateHospitalData,
   hospitalUpdateDriver,
+  hospitalbookings,
 } from "../controllers/hospitalController.js";
 import { getAllBookings } from "../controllers/bookingcontroller.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
@@ -63,6 +64,11 @@ router.put(
   "/hospitaldashboard/hospitalUpdateDriver/:driverId",
   hospitalJWT,
   hospitalUpdateDriver
+);
+router.get(
+  "/hospitaldashboard/hospitalbookings",
+  hospitalJWT,
+  hospitalbookings
 );
 
 export default router;

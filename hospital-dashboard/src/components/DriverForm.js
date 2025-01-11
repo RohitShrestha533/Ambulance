@@ -3,6 +3,7 @@ import { Form, Button, InputGroup, FormControl } from "react-bootstrap";
 import { IconButton } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 const DriverForm = () => {
@@ -15,6 +16,8 @@ const DriverForm = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const location = useLocation();
+  const { name } = location.state || {};
   const handlePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -88,6 +91,7 @@ const DriverForm = () => {
         backgroundColor: "#f9f9f9",
       }}
     >
+      <h1>{name}</h1>
       <h2>Add Driver Details</h2>
       <Form onSubmit={DriverRegisterHandel}>
         <Form.Group className="mb-3">

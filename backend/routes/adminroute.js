@@ -6,6 +6,7 @@ import {
   AdminData,
   UpdateAdmin,
   revenuechart,
+  bookingdetails,
 } from "../controllers/adminController.js";
 import { checkAuth } from "../middleware/checkAuth.js";
 const router = express.Router();
@@ -17,5 +18,6 @@ router.post("/adminLogout", adminLogout);
 router.get("/AdminData", checkAuth, AdminData);
 router.put("/UpdateAdmin", checkAuth, UpdateAdmin);
 
-router.post("/revenuechart", revenuechart);
+router.post("/admin/revenuechart", checkAuth, revenuechart);
+router.post("/bookingdetails", checkAuth, bookingdetails);
 export default router;

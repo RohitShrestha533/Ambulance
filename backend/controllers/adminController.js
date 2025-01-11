@@ -2,9 +2,11 @@ import bcrypt from "bcrypt";
 const saltRounds = 10;
 
 import { Admin } from "../models/admin.js";
+import { Driver } from "../models/driver.js";
 
 import jwt from "jsonwebtoken";
 import { Booking } from "../models/Booking.js";
+import { Hospital } from "../models/hospital.js";
 
 export const adminRegister = async (req, res) => {
   const { email, phone, password, confirmpassword } = req.body;
@@ -142,7 +144,7 @@ export const revenuechart = async (req, res) => {
     const revenueData = await Booking.aggregate([
       {
         $match: {
-          bookingstatus: "pending",
+          bookingstatus: "completed",
         },
       },
       {
@@ -186,5 +188,100 @@ export const revenuechart = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching revenue data", error: err });
+  }
+};
+
+// export const bookingdetails = async (req, res) => {
+//   try {
+//     const stats = await Booking.aggregate([
+//       {
+//         $match: { bookingstatus: "completed" },
+//       },
+//       {
+//         $group: {
+//           _id: null,
+//           totalRevenue: { $sum: "$price" },
+//           totalBookings: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $project: { _id: 0, totalRevenue: 1, totalBookings: 1 },
+//       },
+//     ]);
+
+//     const totalRevenue = stats.length > 0 ? stats[0].totalRevenue : 0;
+//     const totalBookings = stats.length > 0 ? stats[0].totalBookings : 0;
+//     const countdriver = await Driver.countDocuments();
+//     const counthospital = await Hospital.countDocuments();
+//     console.log(countdriver, counthospital);
+//     res.status(200).json({
+//       totalRevenue,
+//       totalBookings,
+//       totaldrivers: countdriver,
+//       totalhospitals: counthospital,
+//     });
+//   } catch (error) {
+//     console.error("Error in bookingdetails:", error);
+//     res.status(500).json({ message: "Error fetching booking stats" });
+//   }
+// };
+
+export const bookingdetails = async (req, res) => {
+  try {
+    const stats = await Booking.aggregate([
+      {
+        $match: { bookingstatus: "completed" },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$price" },
+          totalBookings: { $sum: 1 },
+          advanceCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Advance"] }, 1, 0] },
+          },
+          basicCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Basic"] }, 1, 0] },
+          },
+          transportCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Transport"] }, 1, 0] },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalRevenue: 1,
+          totalBookings: 1,
+          advanceCount: 1,
+          basicCount: 1,
+          transportCount: 1,
+        },
+      },
+    ]);
+
+    const totalRevenue = stats.length > 0 ? stats[0].totalRevenue : 0;
+    const totalBookings = stats.length > 0 ? stats[0].totalBookings : 0;
+    const advanceCount = stats.length > 0 ? stats[0].advanceCount : 0;
+    const basicCount = stats.length > 0 ? stats[0].basicCount : 0;
+    const transportCount = stats.length > 0 ? stats[0].transportCount : 0;
+
+    const countdriver = await Driver.countDocuments();
+    const counthospital = await Hospital.countDocuments();
+    console.log(countdriver, counthospital);
+    console.log(advanceCount, basicCount, transportCount);
+
+    res.status(200).json({
+      totalRevenue,
+      totalBookings,
+      totaldrivers: countdriver,
+      totalhospitals: counthospital,
+      advanceBookings: advanceCount,
+      basicBookings: basicCount,
+      transportBookings: transportCount,
+    });
+  } catch (error) {
+    console.error("Error in bookingdetails:", error);
+    res.status(500).json({ message: "Error fetching booking stats" });
   }
 };

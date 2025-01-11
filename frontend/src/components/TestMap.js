@@ -26,8 +26,8 @@ const TestMap = () => {
   const [tempPlaceName, setTempPlaceName] = useState("");
   const [driverLocations, setDriverLocations] = useState([]);
 
-  let ip = "172.30.3.131"; // Change to your local IP address
-  // let ip = "192.168.18.12"; // Change to your local IP address
+  // let ip = "172.30.3.131"; // Change to your local IP address
+  let ip = "192.168.18.12"; // Change to your local IP address
 
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();

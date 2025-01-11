@@ -5,7 +5,7 @@ import Navs from "./components/Navs";
 import Register from "./components/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "bootstrap-icons/font/bootstrap-icons.css";
-
+import "./App.css";
 const App = () => {
   const token = localStorage.getItem("admintoken");
 

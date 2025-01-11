@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios"; // Axios for API requests
-import { useNavigate } from "react-router-dom"; // React Router for navigation
+import { useNavigate, useLocation } from "react-router-dom"; // React Router for navigation
 
 const Settings = () => {
   const [hospitalData, setHospitalData] = useState(null);
@@ -8,6 +8,8 @@ const Settings = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
 
+  const location = useLocation();
+  const { name } = location.state || {};
   useEffect(() => {
     const fetchHospitalData = async () => {
       try {
@@ -89,6 +91,7 @@ const Settings = () => {
 
   return (
     <div>
+      <h1>{name}</h1>
       <table className="table table-striped table-bordered mt-5">
         <thead style={{ backgroundColor: "#007bff", color: "white" }}>
           <tr>

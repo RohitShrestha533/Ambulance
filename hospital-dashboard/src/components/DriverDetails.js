@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const DriverDetails = () => {
   const [driverData, setDriverData] = useState([]);
@@ -9,6 +9,8 @@ const DriverDetails = () => {
   const [isEditing, setIsEditing] = useState(null);
   const [editDriverData, setEditDriverData] = useState(null);
 
+  const location = useLocation();
+  const { name } = location.state || {};
   // Fetch driver data
   useEffect(() => {
     const fetchDriverData = async () => {
@@ -124,6 +126,7 @@ const DriverDetails = () => {
 
   return (
     <div>
+      <h1>{name}</h1>
       <table className="table table-striped table-bordered mt-5">
         <thead style={{ backgroundColor: "#007bff", color: "white" }}>
           <tr>

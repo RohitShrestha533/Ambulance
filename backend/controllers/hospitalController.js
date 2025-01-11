@@ -217,6 +217,7 @@ export const hospitalLogin = async (req, res) => {
         status: 200,
         message: "Login successful",
         token,
+        name: hospital.hospitalName,
       });
     } else {
       res.status(400).send({ status: 400, message: "Invalid credentials" });
@@ -371,5 +372,69 @@ export const getNearbyHospitals = async (req, res) => {
   } catch (error) {
     console.error("Error fetching nearby hospitals:", error);
     res.status(500).json({ error: "Failed to fetch nearby hospitals" });
+  }
+};
+export const hospitalbookings = async (req, res) => {
+  try {
+    const hospitalId = req.user.id; // Get the hospitalId from authenticated user
+
+    console.log("hi");
+    const summary = await Booking.aggregate([
+      // Match bookings that belong to the specific hospital
+      { $match: { hospitalId: hospitalId } },
+
+      {
+        $facet: {
+          // Total sum of completed bookings
+          totalCompletedPrice: [
+            { $match: { bookingstatus: "Completed" } },
+            {
+              $group: {
+                _id: null,
+                totalPrice: { $sum: "$price" }, // Sum the price field for completed bookings
+              },
+            },
+          ],
+
+          // Total number of bookings (irrespective of the status)
+          totalBookings: [
+            {
+              $group: {
+                _id: null,
+                total: { $count: {} }, // Count the total number of bookings
+              },
+            },
+          ],
+
+          // Group by ambulance type and get the sum of price and total bookings for each type
+          bookingsByAmbulanceType: [
+            { $match: { bookingstatus: "Completed" } },
+            {
+              $group: {
+                _id: "$ambulanceType", // Group by ambulance type
+                totalPrice: { $sum: "$price" }, // Sum the price for each ambulance type
+                totalBookings: { $count: {} }, // Count the total bookings for each ambulance type
+              },
+            },
+            { $sort: { totalPrice: -1 } }, // Sort by total price descending
+          ],
+        },
+      },
+    ]);
+
+    // Extracting data from the aggregation result
+    const completedPrice = summary[0].totalCompletedPrice[0]?.totalPrice || 0; // Handle case when no completed bookings are found
+    const totalBookings = summary[0].totalBookings[0]?.total || 0; // Handle case when no bookings exist
+    const bookingsByAmbulanceType = summary[0].bookingsByAmbulanceType || []; // Handle empty results
+
+    // Send the result as JSON
+    res.status(200).json({
+      completedPrice,
+      totalBookings,
+      bookingsByAmbulanceType,
+    });
+  } catch (error) {
+    console.error("Error fetching booking summary:", error);
+    res.status(500).json({ message: "Failed to fetch booking summary." });
   }
 };

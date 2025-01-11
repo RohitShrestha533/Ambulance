@@ -7,7 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const navigation = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ const LoginPage = () => {
       if (status === 200) {
         localStorage.setItem("admintoken", token);
         alert("Login successful");
-        navigate("/navs");
+        navigation("/navs", { replace: true });
       } else {
         setError(message);
       }

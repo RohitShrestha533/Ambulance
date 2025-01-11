@@ -80,7 +80,7 @@ export const bookambulance = async (req, res) => {
     const newBooking = new Booking({
       ambulanceId,
       driverId,
-      hospitalId,
+      hospital: hospitalId,
       userId,
       distance,
       userlocation: formattedUserLocation,
@@ -149,7 +149,8 @@ export const sosbook = async (req, res) => {
     console.log("ab", nearestDrivers[0]._id);
     const driverId = nearestDrivers[0]._id;
     const ambulanceId = nearestDrivers[0].ambulance;
-    const hospitalId = nearestDrivers[0].hospitalId;
+    const hospitalId = nearestDrivers[0].hospital;
+    console.log(hospitalId);
     const distance = nearestDrivers[0].distance;
     console.log("ambu", ambulanceId);
     const ambu = await Ambulance.findById(ambulanceId);
@@ -159,7 +160,7 @@ export const sosbook = async (req, res) => {
     const newBooking = new Booking({
       ambulanceId,
       driverId,
-      hospitalId,
+      hospital: hospitalId,
       userId,
       distance,
       userlocation: {
