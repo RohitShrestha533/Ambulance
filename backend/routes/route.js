@@ -24,6 +24,7 @@ import {
   UpdateHospitalData,
   hospitalUpdateDriver,
   hospitalbookings,
+  HospitalCart,
 } from "../controllers/hospitalController.js";
 import { getAllBookings } from "../controllers/bookingcontroller.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
@@ -70,5 +71,6 @@ router.get(
   hospitalJWT,
   hospitalbookings
 );
+router.get("/hospitaldashboard/HospitalCart", hospitalJWT, HospitalCart);
 
 export default router;

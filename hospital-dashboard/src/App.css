@@ -25,3 +25,16 @@
 .nav-link:hover {
   color: #fff !important;
 }
+.stat-card {
+  display: flex;
+  justify-content: space-around;
+  width: 17rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.stat-card p {
+  font-size: large;
+}

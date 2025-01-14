@@ -4,6 +4,7 @@ import { Hospital } from "../models/hospital.js";
 import jwt from "jsonwebtoken";
 import { Driver } from "../models/driver.js";
 import Ambulance from "../models/Ambulance.js";
+import { Booking } from "../models/Booking.js";
 import mongoose from "mongoose";
 
 export const hospitalJWT = (req, res, next) => {
@@ -374,67 +375,139 @@ export const getNearbyHospitals = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch nearby hospitals" });
   }
 };
+
 export const hospitalbookings = async (req, res) => {
   try {
-    const hospitalId = req.user.id; // Get the hospitalId from authenticated user
+    const hospitalId = req.hospital?.hospitalId; // Ensure hospitalId exists
+    if (!hospitalId) {
+      return res.status(400).json({ message: "Invalid hospital ID" });
+    }
 
-    console.log("hi");
-    const summary = await Booking.aggregate([
-      // Match bookings that belong to the specific hospital
-      { $match: { hospitalId: hospitalId } },
-
+    // Execute the aggregation query
+    const stats = await Booking.aggregate([
       {
-        $facet: {
-          // Total sum of completed bookings
-          totalCompletedPrice: [
-            { $match: { bookingstatus: "Completed" } },
-            {
-              $group: {
-                _id: null,
-                totalPrice: { $sum: "$price" }, // Sum the price field for completed bookings
-              },
+        $match: {
+          bookingstatus: "completed",
+          hospital: new mongoose.Types.ObjectId(hospitalId),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalRevenue: { $sum: "$price" },
+          totalBookings: { $sum: 1 },
+          advanceCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Advance"] }, 1, 0] },
+          },
+          basicCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Basic"] }, 1, 0] },
+          },
+          transportCount: {
+            $sum: { $cond: [{ $eq: ["$ambulanceType", "Transport"] }, 1, 0] },
+          },
+          advanceRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$ambulanceType", "Advance"] }, "$price", 0],
             },
-          ],
-
-          // Total number of bookings (irrespective of the status)
-          totalBookings: [
-            {
-              $group: {
-                _id: null,
-                total: { $count: {} }, // Count the total number of bookings
-              },
+          },
+          basicRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$ambulanceType", "Basic"] }, "$price", 0],
             },
-          ],
-
-          // Group by ambulance type and get the sum of price and total bookings for each type
-          bookingsByAmbulanceType: [
-            { $match: { bookingstatus: "Completed" } },
-            {
-              $group: {
-                _id: "$ambulanceType", // Group by ambulance type
-                totalPrice: { $sum: "$price" }, // Sum the price for each ambulance type
-                totalBookings: { $count: {} }, // Count the total bookings for each ambulance type
-              },
+          },
+          transportRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$ambulanceType", "Transport"] }, "$price", 0],
             },
-            { $sort: { totalPrice: -1 } }, // Sort by total price descending
-          ],
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          totalRevenue: 1,
+          totalBookings: 1,
+          advanceCount: 1,
+          basicCount: 1,
+          transportCount: 1,
+          advanceRevenue: 1,
+          basicRevenue: 1,
+          transportRevenue: 1,
         },
       },
     ]);
 
-    // Extracting data from the aggregation result
-    const completedPrice = summary[0].totalCompletedPrice[0]?.totalPrice || 0; // Handle case when no completed bookings are found
-    const totalBookings = summary[0].totalBookings[0]?.total || 0; // Handle case when no bookings exist
-    const bookingsByAmbulanceType = summary[0].bookingsByAmbulanceType || []; // Handle empty results
+    const driverCount = await Driver.countDocuments({ hospital: hospitalId });
+    // console.log(driverCount);
+    // Handle empty stats array
+    if (!stats.length) {
+      return res.status(200).json({
+        message: "No booking stats found for this hospital.",
+        stats: null,
+      });
+    }
 
-    // Send the result as JSON
+    // Send the aggregated stats to the frontend
     res.status(200).json({
-      completedPrice,
-      totalBookings,
-      bookingsByAmbulanceType,
+      message: "Booking stats retrieved successfully.",
+      stats: stats[0],
+      driverCount,
     });
   } catch (error) {
-    console.error("Error fetching booking summary:", error);
-    res.status(500).json({ message: "Failed to fetch booking summary." });
+    console.error("Error in hospitalbookings:", error.message, error.stack);
+    res
+      .status(500)
+      .json({ message: "Error fetching booking stats", error: error.message });
+  }
+};
+export const HospitalCart = async (req, res) => {
+  try {
+    const hospitalId = req.hospital?.hospitalId; // Ensure hospitalId exists
+    if (!hospitalId) {
+      return res.status(400).json({ message: "Invalid hospital ID" });
+    }
+    const driverRevenues = await Booking.aggregate([
+      {
+        $match: {
+          hospital: new mongoose.Types.ObjectId(hospitalId),
+        },
+      },
+      {
+        $group: {
+          _id: "$driverId", // Group by driverId
+          totalRevenue: { $sum: "$price" }, // Sum up the price for each driver
+        },
+      },
+      {
+        $lookup: {
+          from: "drivers", // Replace with the actual Driver collection name
+          localField: "_id", // driverId from bookings
+          foreignField: "_id", // _id in Driver collection
+          as: "driverDetails",
+        },
+      },
+      {
+        $unwind: "$driverDetails", // Flatten the driver details array
+      },
+      {
+        $project: {
+          _id: 0,
+          driverId: "$_id", // Include driverId
+          driverName: "$driverDetails.fullname", // Include driver name (adjust based on your schema)
+          totalRevenue: 1, // Include the calculated total revenue
+        },
+      },
+    ]);
+
+    console.log(driverRevenues);
+    res.status(200).json({
+      message: "Chart details retrieved successfully.",
+      driverRevenues,
+    });
+  } catch (error) {
+    console.error("Error in hospitalbookings:", error.message, error.stack);
+    res
+      .status(500)
+      .json({ message: "Error fetching booking stats", error: error.message });
   }
 };

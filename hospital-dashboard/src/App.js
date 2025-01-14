@@ -14,7 +14,7 @@ const App = () => {
     <Router>
       <Routes>
         <Route
-          path="/navs/*"
+          path="/navs"
           element={
             <ProtectedRoute isAuthenticated={!!token}>
               <Navs />
