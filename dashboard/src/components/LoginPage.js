@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
@@ -66,13 +66,11 @@ const LoginPage = () => {
         <Typography variant="h5" align="center" sx={{ marginBottom: 2 }}>
           Admin Login
         </Typography>
-
         {error && (
           <Typography color="error" variant="body2" align="center">
             {error}
           </Typography>
         )}
-
         <TextField
           label="Email"
           variant="outlined"
@@ -91,7 +89,15 @@ const LoginPage = () => {
         />
         <Button type="submit" variant="contained" color="primary">
           Login
-        </Button>
+        </Button>{" "}
+        <Typography variant="body2" align="center">
+          <Link
+            to="/ForgetPassword"
+            style={{ textDecoration: "none", color: "#1976d2" }}
+          >
+            Forgot Password?
+          </Link>
+        </Typography>
       </Box>
     </Box>
   );

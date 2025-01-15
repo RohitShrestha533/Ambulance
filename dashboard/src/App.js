@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import Navs from "./components/Navs";
+import ForgetPassword from "./components/ForgetPassword";
 import Register from "./components/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -14,6 +15,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/Register" element={<Register />} />
+        <Route path="/ForgetPassword" element={<ForgetPassword />} />
 
         <Route
           path="/navs/*"

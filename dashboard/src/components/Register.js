@@ -61,7 +61,7 @@ const Register = () => {
         }}
       >
         <Typography variant="h5" align="center" sx={{ marginBottom: 2 }}>
-          Admin Login
+          Admin Register
         </Typography>
 
         {error && (
@@ -103,7 +103,7 @@ const Register = () => {
           required
         />
         <Button type="submit" variant="contained" color="primary">
-          Login
+          Register
         </Button>
       </Box>
     </Box>
