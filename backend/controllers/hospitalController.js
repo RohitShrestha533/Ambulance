@@ -285,9 +285,9 @@ export const UpdateHospitalData = async (req, res) => {
 export const hospitalUpdateDriver = async (req, res) => {
   const hospitalId = req.hospital.hospitalId;
   const { driverId } = req.params;
-  const { fullname, phone, ambulanceType, gender } = req.body;
+  const { fullname, phone, email, ambulanceType, gender } = req.body;
 
-  if (!fullname || !phone || !gender || !ambulanceType) {
+  if (!fullname || !phone || !email || !gender || !ambulanceType) {
     return res.status(400).json({ error: "Required fields are missing" });
   }
 
@@ -298,7 +298,7 @@ export const hospitalUpdateDriver = async (req, res) => {
 
     const driver = await Driver.findOneAndUpdate(
       { _id: driverId, hospital: hospitalId },
-      { fullname, phone, gender },
+      { fullname, phone, email, gender },
       { new: true }
     );
 
@@ -509,5 +509,69 @@ export const HospitalCart = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error fetching booking stats", error: error.message });
+  }
+};
+
+export const hospitaldriverDelete = async (req, res) => {
+  const session = await mongoose.startSession(); // Start a session for the transaction
+  try {
+    session.startTransaction();
+    const hospitalId = req.hospital?.hospitalId; // Middleware should set this
+    const { driverId } = req.body;
+    console.log("ABC", driverId);
+    if (!hospitalId) {
+      throw new Error("Invalid hospital ID");
+    }
+
+    if (!driverId) {
+      throw new Error("Driver ID is required");
+    }
+
+    // Find the driver and validate ownership
+    const driver = await Driver.findOne({
+      _id: driverId,
+      hospital: hospitalId,
+    }).session(session);
+    if (!driver) {
+      throw new Error("Driver not found or does not belong to this hospital");
+    }
+
+    // Find the ambulance associated with the driver
+    const ambulance = await Ambulance.findOne({
+      driver: driverId,
+      hospital: hospitalId,
+    }).session(session);
+    if (!ambulance) {
+      throw new Error("Ambulance not found for this driver in the hospital");
+    }
+
+    // Delete the driver
+    await Driver.deleteOne({ _id: driverId }).session(session);
+
+    // Delete the ambulance
+    await Ambulance.deleteOne({ _id: ambulance._id }).session(session);
+
+    // Update the hospital's arrays
+    await Hospital.updateOne(
+      { _id: hospitalId },
+      {
+        $pull: {
+          drivers: driverId,
+          ambulances: ambulance._id,
+        },
+      },
+      { session }
+    );
+
+    await session.commitTransaction();
+    res.status(200).json({
+      message: "Driver and associated ambulance deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Error deleting driver and ambulance:", error);
+    res.status(500).json({ message: error.message });
+  } finally {
+    session.endSession();
   }
 };

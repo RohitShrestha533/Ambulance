@@ -125,7 +125,7 @@ const Hospitaldashboard = () => {
         title: {
           display: true,
           text: "Drivers", // Title for the x-axis
-          color: "black", // Light gray for axis title
+          color: "black",
         },
         ticks: {
           color: "black", // Light gray tick text
@@ -138,7 +138,7 @@ const Hospitaldashboard = () => {
         title: {
           display: true,
           text: "Amount ($)", // Title for the y-axis
-          color: "black", // Light gray for axis title
+          color: "black",
         },
         ticks: {
           color: "black", // Light gray tick text
@@ -147,7 +147,7 @@ const Hospitaldashboard = () => {
           },
         },
         grid: {
-          color: "rgba(204, 204, 204, 0.2)", // Subtle light gray gridlines for y-axis
+          color: "rgba(156, 154, 154, 0.2)", // Subtle light gray gridlines for y-axis
         },
       },
     },
@@ -201,7 +201,9 @@ const Hospitaldashboard = () => {
         summary && (
           <>
             {/* Total Revenue */}
-            <h1>{name}</h1>
+            <p className="w-100">
+              <h1>{name}</h1>
+            </p>
             <div className="stat-card">
               <div>
                 <h5>Total Revenue</h5>
@@ -282,7 +284,7 @@ const Hospitaldashboard = () => {
             </div>
 
             <Container>
-              <Grid container spacing={4} justifyContent="center">
+              <Grid container spacing={4} justifyContent="space-evenly">
                 {/* Loading state */}
                 {loading ? (
                   <CircularProgress />

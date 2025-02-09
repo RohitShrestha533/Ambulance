@@ -3,12 +3,14 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
-
+import { Admin } from "./models/admin.js";
 import session from "express-session";
 import { connectDB } from "./db/connectDB.js";
 import router from "./routes/route.js";
 import userRoutes from "./routes/userroute.js";
 import adminRoutes from "./routes/adminroute.js";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -56,6 +58,63 @@ app.use(
   })
 );
 
+// Generate OTP function
+function generateOTP() {
+  return crypto.randomInt(100000, 999999).toString(); // 6-digit OTP
+}
+// Create the email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail", // or any other service you prefer
+  auth: {
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// Send OTP to user's email
+const sendOTP = (email, otp) => {
+  const mailOptions = {
+    from: process.env.EMAIL,
+    to: email,
+    subject: "Your OTP for Password Reset",
+    text: `Your OTP for password reset is: ${otp}`,
+  };
+
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("OTP sent: " + info.response);
+    }
+  });
+};
+
+let otpStorage = {}; // This will hold the OTP temporarily (usually you store this in a database)
+
+app.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  const admin = await Admin.findOne({ email });
+  if (!admin) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  const otp = generateOTP();
+  otpStorage[email] = otp; // Store OTP temporarily
+
+  // Send OTP to user's email
+  sendOTP(email, otp);
+
+  res.json({ message: "OTP sent to your email" });
+});
+
+// Endpoint for verifying OTP
+app.post("/verify-otp", (req, res) => {
+  const { email, otp } = req.body;
+  if (otpStorage[email] === otp) {
+    res.json({ message: "OTP verified successfully" });
+  } else {
+    res.status(400).json({ message: "Invalid OTP" });
+  }
+});
 app.use("/admin", adminRoutes);
 app.use("/", userRoutes);
 app.use("/", router);

@@ -5,6 +5,7 @@ import "react-native-gesture-handler";
 import "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
 import Login from "./src/components/Login";
+import Hi from "./src/components/Hi";
 import UserProfile from "./src/components/UserProfile";
 import Account from "./src/components/Account";
 import Map from "./src/components/Map";
@@ -75,6 +76,7 @@ export default function App() {
         />
         <Stack.Screen name="AccountUpdate" component={AccountUpdate} />
         <Stack.Screen name="History" component={History} />
+        <Stack.Screen name="Hi" component={Hi} />
         <Stack.Screen name="Passwordchange" component={Passwordchange} />
         <Stack.Screen name="Policies" component={Policies} />
 

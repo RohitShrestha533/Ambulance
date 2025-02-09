@@ -26,7 +26,7 @@ const DriverAccountUpdate = () => {
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
   // let ip = "172.30.3.131";
-  let ip = "192.168.18.12";
+  let ip = "192.168.4.106";
 
   useEffect(() => {
     const fetchDriverData = async () => {

@@ -186,7 +186,19 @@ const DriverDetails = () => {
                   driver.phone
                 )}
               </td>
-              <td>{driver.email}</td>
+              <td>
+                {isEditing === driver._id ? (
+                  <input
+                    type="email"
+                    className="form-control"
+                    name="email"
+                    value={editDriverData?.email || driver.email}
+                    onChange={(e) => handleInputChange(e, driver._id)}
+                  />
+                ) : (
+                  driver.email
+                )}
+              </td>
               <td>
                 {isEditing === driver._id ? (
                   <select

@@ -25,6 +25,7 @@ import {
   hospitalUpdateDriver,
   hospitalbookings,
   HospitalCart,
+  hospitaldriverDelete,
 } from "../controllers/hospitalController.js";
 import { getAllBookings } from "../controllers/bookingcontroller.js";
 import { getUnverifiedHospitals } from "../controllers/hospitalController.js";
@@ -72,5 +73,10 @@ router.get(
   hospitalbookings
 );
 router.get("/hospitaldashboard/HospitalCart", hospitalJWT, HospitalCart);
+router.delete(
+  "/hospitaldashboard/hospitaldriverDelete",
+  hospitalJWT,
+  hospitaldriverDelete
+);
 
 export default router;

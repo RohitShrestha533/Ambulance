@@ -89,7 +89,26 @@ export const adminLogin = async (req, res) => {
     res.status(500).send({ status: "error", message: error.message });
   }
 };
+export const Adminpassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    console.log(email, newPassword);
+    const admin = await Admin.findOne({ email: email });
+    if (!admin) {
+      return res.status(404).send({ message: "User not found" });
+    }
 
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    admin.password = hashedPassword;
+    await admin.save();
+
+    res.status(200).send({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+};
 //logout
 export const adminLogout = async (req, res) => {
   res.clearCookie("token");

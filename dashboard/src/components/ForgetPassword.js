@@ -62,7 +62,7 @@ const ForgotPassword = () => {
         }
       );
       if (response.data) {
-        navigation("/navs");
+        navigation("/login");
       }
     } catch (error) {
       console.log(error);
@@ -79,7 +79,7 @@ const ForgotPassword = () => {
         alignItems: "center",
         justifyContent: "center",
         minHeight: "100vh",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#e7e3ed",
         padding: 3,
       }}
     >
@@ -126,6 +126,7 @@ const ForgotPassword = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          disabled={isOtpSent}
         />
 
         {/* Send OTP Button */}
@@ -149,8 +150,6 @@ const ForgotPassword = () => {
             </Button>
           </>
         )}
-
-        {/* Change Password Button */}
         {isOtpVerified && (
           <>
             <TextField
