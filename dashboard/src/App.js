@@ -51,6 +51,7 @@ import Notification from "./pages/Notification";
 import Settings from "./pages/Settings";
 import ForgotPassword from "./components/ForgetPassword";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import Make from "./components/Make";
 import "./App.css";
 import axios from "axios";
 const App = () => {
@@ -84,6 +85,7 @@ const App = () => {
               element={!authState.token && <Register />}
             />
             <Route path="/Dashboard" element={<Dashboard />} />
+            <Route path="/Make" element={<Make />} />
             <Route path="/ForgetPassword" element={<ForgotPassword />} />
             <Route path="/Setting" element={<Settings />} />
             <Route
@@ -97,7 +99,7 @@ const App = () => {
               path="/"
               element={
                 authState.token ? (
-                  <Navigate to="/Product" />
+                  <Navigate to="/Dashboard" />
                 ) : (
                   <Navigate to="/login" />
                 )

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Container, Spinner } from "react-bootstrap";
 import axios from "axios";
+import Make from "./Make";
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
@@ -107,68 +108,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              {/* <div className="row mb-4">
-                <div className="col-lg-3 col-md-6 mb-4">
-                  <div className="card shadow-sm text-center">
-                    <div className="card-body">
-                      <h4>Advance Ambulance Booking</h4>
-                      <h2 className="text-primary">
-                        {stats.advanceBookings || 0}
-                      </h2>
-                      <p className="text-muted">Over All</p>
-                      <i
-                        class="bi bi-bus-front-fill"
-                        style={{ fontSize: "40px", color: "red" }}
-                      ></i>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-3 col-md-6 mb-4">
-                  <div className="card shadow-sm text-center">
-                    <div className="card-body">
-                      <h4>Basic Ambulance Booking</h4>
-                      <h2 className="text-success">
-                        {stats.basicBookings || 0}
-                      </h2>
-                      <p className="text-muted">This Week</p>
-                      <i
-                        class="bi bi-bus-front-fill"
-                        style={{ fontSize: "40px", color: "red" }}
-                      ></i>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-3 col-md-6 mb-4">
-                  <div className="card shadow-sm text-center">
-                    <div className="card-body">
-                      <h4>Transport Ambulance Booking</h4>
-                      <h2 className="text-warning">
-                        {stats.transportBookings || 0}
-                      </h2>
-                      <p className="text-muted">Registered Users</p>
-                      <i
-                        class="bi bi-bus-front-fill"
-                        style={{ fontSize: "40px", color: "red" }}
-                      ></i>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-lg-3 col-md-6 mb-4">
-                  <div className="card shadow-sm text-center">
-                    <div className="card-body">
-                      <h4>Total Booking</h4>
-                      <h2 className="text-danger">
-                        {stats.totalBookings || 0}
-                      </h2>
-                      <p className="text-muted">This Week</p>
-                      <i
-                        class="bi bi-bus-front-fill"
-                        style={{ fontSize: "40px", color: "red" }}
-                      ></i>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
+              <Make />
             </div>
           </>
         )
