@@ -14,8 +14,8 @@ const History = ({ userId }) => {
   const [bookingHistory, setBookingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  let ip = "192.168.4.106"; // Your backend IP address
-  // let ip = "192.168.18.12"; // Your backend IP address
+  // let ip = "192.168.4.106"; // Your backend IP address
+  let ip = "192.168.18.12"; // Your backend IP address
 
   const fetchBookingHistory = async () => {
     try {

@@ -19,7 +19,7 @@ const DriverAccount = () => {
   const [error, setError] = useState(null);
 
   // let ip = "172.30.3.131";
-  let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
 
   // Fetch driver details
 

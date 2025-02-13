@@ -15,8 +15,8 @@ const SOSButton = ({ onPress }) => (
     <Text style={{ color: "white" }}>SOS</Text>
   </TouchableOpacity>
 );
-let ip = "192.168.4.106";
-// let ip = "192.168.18.12";
+// let ip = "192.168.4.106";
+let ip = "192.168.18.12";
 const bookAmbulance = async () => {
   const requestLocationPermission = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -131,7 +131,7 @@ const Main = () => {
         onPress={() => {
           if (isLoggedIn) {
             Alert.alert(
-              "Logout",
+              "Booking",
               "SOS Button Pressed! Are you sure for Booking Ambulance?",
               [
                 { text: "Cancel", style: "cancel" },

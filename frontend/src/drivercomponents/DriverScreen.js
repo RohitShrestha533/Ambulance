@@ -15,7 +15,7 @@ const DriverScreen = () => {
   const [loading, setLoading] = useState(true);
 
   // let ip = "172.30.3.131";
-  let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
 
   const fetchBookingHistory = async () => {
     try {

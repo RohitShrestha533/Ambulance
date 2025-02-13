@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { TextField, Button, Box, Typography } from "@mui/material";
 
@@ -7,7 +7,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigation = useNavigate();
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,12 +17,14 @@ const LoginPage = () => {
         email,
         password,
       });
-      const { status, message, token, name } = response.data;
+      const { message, token, name } = response.data;
       console.log("token", token);
-      if (status === 200) {
+      if (response.status === 200) {
         localStorage.setItem("hospitaltoken", token);
         alert("Login successful");
-        navigation("/navs", { replace: true, state: { name } });
+        setTimeout(() => {
+          navigate("/navs", { replace: true, state: { name } });
+        }, 1000);
       } else {
         setError(message);
       }
@@ -88,6 +90,14 @@ const LoginPage = () => {
         <Button type="submit" variant="contained" color="primary">
           Login
         </Button>
+        <Typography variant="body2" align="center" className="mt-3">
+          <Link
+            to="/ForgetPassword"
+            style={{ textDecoration: "none", color: "#1976d2" }}
+          >
+            Forget Password?
+          </Link>
+        </Typography>
       </Box>
     </Box>
   );

@@ -25,8 +25,8 @@ const AccountUpdate = () => {
   const [gender, setGender] = useState("");
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
-  let ip = "192.168.4.106";
-  // let ip = "192.168.18.12";
+  // let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
 
   useEffect(() => {
     const fetchUserData = async () => {

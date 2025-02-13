@@ -18,8 +18,8 @@ const AvailableAmbulance = ({ route }) => {
   console.log("UserLocation:", mylocation);
   console.log("totaldistance:", totaldistance);
   console.log("DestinationLocation:", destination);
-  let ip = "192.168.4.106";
-  // let ip = "192.168.18.12";
+  // let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
   const bookAmbulance = async (
     ambulanceId,
     driverId,
@@ -88,10 +88,17 @@ const AvailableAmbulance = ({ route }) => {
       <View style={styles.card}>
         <Text style={styles.header}>Ambulance Details</Text>
         <Text style={styles.header}>Price: Rs. {price.toFixed(2)}</Text>
-        <Text style={styles.text}>Name: {item.driverDetails?.fullname}</Text>
         <Text style={styles.text}>
-          Phone Number: {item.driverDetails?.phone}
+          Name:{" "}
+          {item.driverDetails?.length > 0
+            ? item.driverDetails[0].fullname
+            : "N/A"}
         </Text>
+        <Text style={styles.text}>
+          Phone Number:{" "}
+          {item.driverDetails?.length > 0 ? item.driverDetails[0].phone : "N/A"}
+        </Text>
+
         <Text style={styles.text}>
           Ambulance Number: {item.ambulanceNumber}
         </Text>

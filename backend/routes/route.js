@@ -25,6 +25,7 @@ import {
   hospitalUpdateDriver,
   hospitalbookings,
   HospitalCart,
+  Hospitalpassword,
   hospitaldriverDelete,
 } from "../controllers/hospitalController.js";
 import { getAllBookings } from "../controllers/bookingcontroller.js";
@@ -57,6 +58,8 @@ router.get("/api/getUnverifiedHospitals", getUnverifiedHospitals);
 router.post("/hospitalLogin", hospitalLogin);
 router.post("/hospitalLogout", hospitalLogout);
 router.post("/hospitalRegister", hospitalRegister);
+
+router.post("/hospital/change-password", Hospitalpassword);
 router.put(
   "/hospitaldashboard/UpdateHospitalData",
   hospitalJWT,

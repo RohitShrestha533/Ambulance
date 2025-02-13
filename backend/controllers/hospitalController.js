@@ -24,7 +24,26 @@ export const hospitalJWT = (req, res, next) => {
     next();
   });
 };
+export const Hospitalpassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+  try {
+    console.log(email, newPassword);
+    const hospital = await Hospital.findOne({ email: email });
+    if (!hospital) {
+      return res.status(404).send({ message: "User not found" });
+    }
 
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    hospital.password = hashedPassword;
+    await hospital.save();
+
+    res.status(200).send({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
+};
 export const hospitalData = async (req, res) => {
   const hospitalId = req.hospital.hospitalId;
 
@@ -285,9 +304,25 @@ export const UpdateHospitalData = async (req, res) => {
 export const hospitalUpdateDriver = async (req, res) => {
   const hospitalId = req.hospital.hospitalId;
   const { driverId } = req.params;
-  const { fullname, phone, email, ambulanceType, gender } = req.body;
-
-  if (!fullname || !phone || !email || !gender || !ambulanceType) {
+  const {
+    fullname,
+    phone,
+    licenseNumber,
+    email,
+    ambulanceType,
+    gender,
+    status,
+  } = req.body;
+  console.log("lc ", licenseNumber);
+  if (
+    !fullname ||
+    !phone ||
+    !email ||
+    !gender ||
+    !ambulanceType ||
+    !licenseNumber ||
+    !status
+  ) {
     return res.status(400).json({ error: "Required fields are missing" });
   }
 
@@ -298,7 +333,7 @@ export const hospitalUpdateDriver = async (req, res) => {
 
     const driver = await Driver.findOneAndUpdate(
       { _id: driverId, hospital: hospitalId },
-      { fullname, phone, email, gender },
+      { fullname, phone, email, gender, licenseNumber, status },
       { new: true }
     );
 

@@ -31,7 +31,7 @@ const driverSchema = new mongoose.Schema(
     },
     isBooked: { type: Boolean, default: false },
 
-    status: { type: String, enum: ["active", "inactive"], default: "active" },
+    status: { type: String, enum: ["Active", "Inactive"], default: "active" },
   },
   { timestamps: true }
 );

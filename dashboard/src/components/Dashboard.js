@@ -57,7 +57,6 @@ const Dashboard = () => {
                       <h2 className="text-primary">
                         Rs {stats.totalRevenue.toFixed(2) || "0.00"}
                       </h2>
-                      <p className="text-muted">Over All</p>
                       <i
                         class="bi bi-coin"
                         style={{ fontSize: "40px", color: "red" }}
@@ -72,7 +71,6 @@ const Dashboard = () => {
                       <h2 className="text-success">
                         {stats.totaldrivers || 0}
                       </h2>
-                      <p className="text-muted">This Week</p>
                       <i
                         class="bi bi-person-vcard"
                         style={{ fontSize: "40px", color: "red" }}
@@ -87,7 +85,6 @@ const Dashboard = () => {
                       <h2 className="text-warning">
                         {stats.totalhospitals || 0}
                       </h2>
-                      <p className="text-muted">Registered Users</p>{" "}
                       <i
                         className="bi bi-hospital"
                         style={{ fontSize: "40px", color: "red" }}
@@ -102,7 +99,6 @@ const Dashboard = () => {
                       <h2 className="text-danger">
                         {stats.totalBookings || 0}
                       </h2>
-                      <p className="text-muted">This Week</p>
                       <i
                         class="bi bi-bus-front-fill"
                         style={{ fontSize: "40px", color: "red" }}
@@ -111,7 +107,7 @@ const Dashboard = () => {
                   </div>
                 </div>
               </div>
-              <div className="row mb-4">
+              {/* <div className="row mb-4">
                 <div className="col-lg-3 col-md-6 mb-4">
                   <div className="card shadow-sm text-center">
                     <div className="card-body">
@@ -172,7 +168,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </>
         )

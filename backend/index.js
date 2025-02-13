@@ -4,6 +4,8 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
 import { Admin } from "./models/admin.js";
+import { User } from "./models/user.js";
+import { Driver } from "./models/driver.js";
 import session from "express-session";
 import { connectDB } from "./db/connectDB.js";
 import router from "./routes/route.js";
@@ -11,7 +13,9 @@ import userRoutes from "./routes/userroute.js";
 import adminRoutes from "./routes/adminroute.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
-
+import { Hospital } from "./models/hospital.js";
+import bcrypt from "bcrypt";
+const saltRounds = 10;
 dotenv.config();
 
 const app = express();
@@ -104,6 +108,64 @@ app.post("/forgot-password", async (req, res) => {
   sendOTP(email, otp);
 
   res.json({ message: "OTP sent to your email" });
+});
+app.post("/hospital/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  const hospital = await Hospital.findOne({ email });
+  if (!hospital) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  const otp = generateOTP();
+  otpStorage[email] = otp; // Store OTP temporarily
+
+  // Send OTP to user's email
+  sendOTP(email, otp);
+
+  res.json({ message: "OTP sent to your email" });
+});
+app.post("/api/forgot-password", async (req, res) => {
+  const { email, role } = req.body;
+  let result;
+  if (role === "User") {
+    result = await User.findOne({ email });
+  } else {
+    result = await Driver.findOne({ email });
+  }
+  if (!result) {
+    return res.status(404).send({ message: "User not found" });
+  }
+  const otp = generateOTP();
+  otpStorage[email] = otp; // Store OTP temporarily
+
+  // Send OTP to user's email
+  sendOTP(email, otp);
+
+  res.json({ message: "OTP sent to your email" });
+});
+app.post("/api/change-password", async (req, res) => {
+  const { email, newPassword, role } = req.body;
+  try {
+    console.log(email, newPassword, role);
+    let fp;
+    if (role === "User") {
+      fp = await User.findOne({ email: email });
+    } else {
+      fp = await Driver.findOne({ email: email });
+    }
+    if (!fp) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    fp.password = hashedPassword;
+    await fp.save();
+
+    res.status(200).send({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error updating password:", error);
+    res.status(500).send({ message: "Internal Server Error" });
+  }
 });
 
 // Endpoint for verifying OTP

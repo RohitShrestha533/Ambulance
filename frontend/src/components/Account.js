@@ -18,8 +18,8 @@ const Account = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  let ip = "192.168.4.106";
-  // let ip = "192.168.18.12";
+  // let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
 
   // Fetch user details
 

@@ -15,8 +15,8 @@ import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import Login from "./Login";
 const RegisterHospital = () => {
-  let ip = "172.30.5.17";
-  // let ip = "192.168.18.12";
+  // let ip = "172.30.5.17";
+  let ip = "192.168.18.12";
 
   const navigation = useNavigation();
   const [hospitalName, setHospitalName] = useState("");
@@ -122,7 +122,10 @@ const RegisterHospital = () => {
       .then((response) => {
         if (response.data.status === 200) {
           alert("submitted successful wait for admin approve");
-          navigation.replace("Login");
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Login" }],
+          });
         } else {
           alert(response.data.message);
         }

@@ -25,8 +25,8 @@ const Login = () => {
   const [logpasswordVisible, setLogPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
-  // let ip = "192.168.18.12";
-  let ip = "192.168.4.106";
+  let ip = "192.168.18.12";
+  // let ip = "192.168.4.106";
 
   async function UserLoginHandel() {
     if (!role) {
@@ -236,10 +236,10 @@ const Login = () => {
             <TouchableOpacity
               style={{ alignItems: "center" }}
               onPress={() => {
-                navigation.navigate("RegisterHospital");
+                navigation.navigate("ForgetPassword");
               }}
             >
-              <Text style={styles.register}>Register for Hospital</Text>
+              <Text style={styles.register}>ForgetPassword</Text>
             </TouchableOpacity>
           </>
         )}

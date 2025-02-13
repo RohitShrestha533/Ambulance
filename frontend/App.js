@@ -31,13 +31,14 @@ import Driverpasswordchange from "./src/drivercomponents/Driverpasswordchange";
 import RegisterHospital from "./src/components/RegisterHospital";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import ForgetPassword from "./src/components/ForgetPassword";
 
 const Stack = createStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Main">
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -50,6 +51,7 @@ export default function App() {
         <Stack.Screen name="Map" component={Map} />
         <Stack.Screen name="TestMap" component={TestMap} />
         <Stack.Screen name="Main" component={Main} />
+        <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
         <Stack.Screen
           name="AvailableAmbulance"
           component={AvailableAmbulance}

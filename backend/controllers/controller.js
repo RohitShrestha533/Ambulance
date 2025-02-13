@@ -281,6 +281,7 @@ export const driversnearby = async (req, res) => {
       {
         $match: {
           "driverDetails.isBooked": false,
+          "driverDetails.status": "Active",
         },
       },
       {
@@ -299,7 +300,7 @@ export const driverlocation = async (req, res) => {
 
   try {
     const drivers = await Driver.find(
-      {},
+      { status: "Active" },
       { fullname: 1, "location.coordinates": 1, _id: 0 }
     );
 

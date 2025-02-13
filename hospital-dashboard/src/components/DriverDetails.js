@@ -233,8 +233,22 @@ const DriverDetails = () => {
                 ) : (
                   driver.gender
                 )}
+              </td>{" "}
+              <td>
+                {isEditing === driver._id ? (
+                  <select
+                    className="form-control"
+                    name="status"
+                    value={editDriverData?.status || driver.status}
+                    onChange={handleInputChange}
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                ) : (
+                  driver.status
+                )}
               </td>
-              <td>{driver.status}</td>
               <td>
                 {isEditing === driver._id ? (
                   <>

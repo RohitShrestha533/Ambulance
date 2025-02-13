@@ -133,6 +133,7 @@ export const sosbook = async (req, res) => {
       {
         $match: {
           isBooked: false,
+          status: "Active",
         },
       },
       {

@@ -25,7 +25,7 @@ const SectionlistToDisplay = [
 ];
 
 // let ip = "172.30.3.131";
-let ip = "192.168.4.106";
+let ip = "192.168.18.12";
 
 const Item = ({ name, navigation }) => {
   const handlePress = async () => {
@@ -42,7 +42,7 @@ const Item = ({ name, navigation }) => {
       case "Policies":
         navigation.navigate("DriverPolicies");
         break;
-      case "Log Out":
+        // case "Log Out":
         try {
           let token = "";
           if (Platform.OS === "web") {
@@ -50,17 +50,17 @@ const Item = ({ name, navigation }) => {
           } else {
             token = await AsyncStorage.getItem("drivertoken");
           }
-
+          console.log("hiiiii ", token);
           if (token) {
-            await axios.post(
-              `http://${ip}:5000/driverLogout`,
-              {},
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            // await axios.post(
+            //   `http://${ip}:5000/driverLogout`,
+            //   {},
+            //   {
+            //     headers: {
+            //       Authorization: `Bearer ${token}`,
+            //     },
+            //   }
+            // );
 
             if (Platform.OS === "web") {
               localStorage.removeItem("drivertoken");
@@ -69,7 +69,7 @@ const Item = ({ name, navigation }) => {
             }
             navigation.reset({
               index: 0,
-              routes: [{ name: "Main" }], // Main is the screen you want to navigate to
+              routes: [{ name: "Login" }], // Main is the screen you want to navigate to
             });
             alert("Logged out successfully");
           } else {
@@ -79,6 +79,39 @@ const Item = ({ name, navigation }) => {
           alert("Logout failed. Please try again.");
         }
 
+        break;
+      case "Log Out":
+        try {
+          console.log("hah");
+          let token =
+            Platform.OS === "web"
+              ? localStorage.getItem("drivertoken")
+              : await AsyncStorage.getItem("drivertoken");
+
+          if (token) {
+            await axios
+              .post(
+                `http://${ip}:5000/driverLogout`,
+                {},
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                }
+              )
+              .catch((err) => console.error("Logout API error:", err));
+
+            Platform.OS === "web"
+              ? localStorage.removeItem("drivertoken")
+              : await AsyncStorage.removeItem("drivertoken");
+            console.log("helllo ");
+            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+            alert("Logged out successfully");
+          } else {
+            alert("No token found, user might already be logged out.");
+          }
+        } catch (error) {
+          console.error("Logout failed:", error);
+          alert("Logout failed. Please try again.");
+        }
         break;
       default:
         navigation.navigate("Details", { name });
