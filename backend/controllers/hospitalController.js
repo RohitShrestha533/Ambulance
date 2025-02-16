@@ -398,7 +398,6 @@ export const getNearbyHospitals = async (req, res) => {
       },
     ]);
 
-    // If you want to format the distance or add it in a specific way
     const hospitalsWithDistance = hospitals.map((hospital) => ({
       ...hospital,
       distance: hospital.distance.toFixed(2), // Format distance (optional)
@@ -413,12 +412,11 @@ export const getNearbyHospitals = async (req, res) => {
 
 export const hospitalbookings = async (req, res) => {
   try {
-    const hospitalId = req.hospital?.hospitalId; // Ensure hospitalId exists
+    const hospitalId = req.hospital?.hospitalId;
     if (!hospitalId) {
       return res.status(400).json({ message: "Invalid hospital ID" });
     }
 
-    // Execute the aggregation query
     const stats = await Booking.aggregate([
       {
         $match: {
@@ -474,7 +472,6 @@ export const hospitalbookings = async (req, res) => {
 
     const driverCount = await Driver.countDocuments({ hospital: hospitalId });
     // console.log(driverCount);
-    // Handle empty stats array
     if (!stats.length) {
       return res.status(200).json({
         message: "No booking stats found for this hospital.",
@@ -482,7 +479,6 @@ export const hospitalbookings = async (req, res) => {
       });
     }
 
-    // Send the aggregated stats to the frontend
     res.status(200).json({
       message: "Booking stats retrieved successfully.",
       stats: stats[0],
@@ -497,7 +493,7 @@ export const hospitalbookings = async (req, res) => {
 };
 export const HospitalCart = async (req, res) => {
   try {
-    const hospitalId = req.hospital?.hospitalId; // Ensure hospitalId exists
+    const hospitalId = req.hospital?.hospitalId;
     if (!hospitalId) {
       return res.status(400).json({ message: "Invalid hospital ID" });
     }
@@ -509,27 +505,27 @@ export const HospitalCart = async (req, res) => {
       },
       {
         $group: {
-          _id: "$driverId", // Group by driverId
-          totalRevenue: { $sum: "$price" }, // Sum up the price for each driver
+          _id: "$driverId",
+          totalRevenue: { $sum: "$price" },
         },
       },
       {
         $lookup: {
-          from: "drivers", // Replace with the actual Driver collection name
-          localField: "_id", // driverId from bookings
-          foreignField: "_id", // _id in Driver collection
+          from: "drivers",
+          localField: "_id",
+          foreignField: "_id",
           as: "driverDetails",
         },
       },
       {
-        $unwind: "$driverDetails", // Flatten the driver details array
+        $unwind: "$driverDetails",
       },
       {
         $project: {
           _id: 0,
-          driverId: "$_id", // Include driverId
-          driverName: "$driverDetails.fullname", // Include driver name (adjust based on your schema)
-          totalRevenue: 1, // Include the calculated total revenue
+          driverId: "$_id",
+          driverName: "$driverDetails.fullname",
+          totalRevenue: 1,
         },
       },
     ]);
@@ -551,7 +547,7 @@ export const hospitaldriverDelete = async (req, res) => {
   const session = await mongoose.startSession(); // Start a session for the transaction
   try {
     session.startTransaction();
-    const hospitalId = req.hospital?.hospitalId; // Middleware should set this
+    const hospitalId = req.hospital?.hospitalId;
     const { driverId } = req.body;
     console.log("ABC", driverId);
     if (!hospitalId) {
@@ -562,7 +558,6 @@ export const hospitaldriverDelete = async (req, res) => {
       throw new Error("Driver ID is required");
     }
 
-    // Find the driver and validate ownership
     const driver = await Driver.findOne({
       _id: driverId,
       hospital: hospitalId,
@@ -571,7 +566,6 @@ export const hospitaldriverDelete = async (req, res) => {
       throw new Error("Driver not found or does not belong to this hospital");
     }
 
-    // Find the ambulance associated with the driver
     const ambulance = await Ambulance.findOne({
       driver: driverId,
       hospital: hospitalId,
@@ -580,13 +574,10 @@ export const hospitaldriverDelete = async (req, res) => {
       throw new Error("Ambulance not found for this driver in the hospital");
     }
 
-    // Delete the driver
     await Driver.deleteOne({ _id: driverId }).session(session);
 
-    // Delete the ambulance
     await Ambulance.deleteOne({ _id: ambulance._id }).session(session);
 
-    // Update the hospital's arrays
     await Hospital.updateOne(
       { _id: hospitalId },
       {

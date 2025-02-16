@@ -15,7 +15,6 @@ const ForgotPassword = () => {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     try {
-      // Send OTP to email
       const response = await axios.post(
         "http://localhost:5000/forgot-password",
         { email }
@@ -44,7 +43,7 @@ const ForgotPassword = () => {
       setMessage(response.data.message);
       setError("");
 
-      setIsOtpVerified(true); // OTP is verified
+      setIsOtpVerified(true);
     } catch (error) {
       setError("Invalid OTP");
       setMessage("");
@@ -118,7 +117,6 @@ const ForgotPassword = () => {
           </Typography>
         )}
 
-        {/* Email Field */}
         <TextField
           label="Email"
           variant="outlined"
@@ -129,14 +127,12 @@ const ForgotPassword = () => {
           disabled={isOtpSent}
         />
 
-        {/* Send OTP Button */}
         {!isOtpSent && (
           <Button type="submit" variant="contained" color="primary">
             Send OTP
           </Button>
         )}
 
-        {/* Verify OTP Button */}
         {isOtpSent && !isOtpVerified && (
           <>
             <TextField

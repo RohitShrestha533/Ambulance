@@ -12,6 +12,7 @@ import {
   confirmBooking,
   completeBooking,
   updateDriverLocation,
+  pickup,
 } from "../controllers/driverController.js";
 import {
   hospitalRegister,
@@ -43,6 +44,7 @@ router.post("/driverRegister", hospitalJWT, driverRegister);
 router.post("/driverLogin", driverLogin);
 router.post("/driverLogout", driverLogout);
 router.get("/DriverData", driverJWT, DriverData);
+router.get("/pickup", driverJWT, pickup);
 router.put("/UpdateDriver", driverJWT, UpdateDriver);
 router.post("/driver/UpdateUserPassword", driverJWT, UpdateUserPassword);
 

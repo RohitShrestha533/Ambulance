@@ -7,13 +7,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const HomeScreen = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigation = useNavigation();
+  const [userData, setUserData] = useState(null);
 
+  let ip = "192.168.18.12";
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (token) {
           setIsLoggedIn(true);
+          fetchUserData(token);
         } else {
           setIsLoggedIn(false);
         }
@@ -25,6 +28,22 @@ const HomeScreen = () => {
 
     checkLoginStatus();
   }, []);
+
+  const fetchUserData = async (token) => {
+    try {
+      const response = await fetch(`http://${ip}:5000/UserData`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      console.log(data);
+      setUserData(data); // Set the fetched user data to state
+    } catch (error) {
+      console.error("Error fetching user data", error);
+    }
+  };
   const nearhospital = () => {
     navigation.navigate("Nearhospital");
   };
@@ -42,7 +61,9 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>Welcome back, !</Text>
+        <Text style={styles.headerText}>
+          Welcome {userData?.user?.fullname || "!"} !
+        </Text>
         <Text style={styles.subHeaderText}>
           Emergency services are just a tap away.
         </Text>
@@ -54,7 +75,7 @@ const HomeScreen = () => {
           <Text style={styles.cardText}>Book Ambulance</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => alert("calling")}>
           <Ionicons name="call" size={40} color="red" />
           <Text style={styles.cardText}>Emergency Call</Text>
         </TouchableOpacity>

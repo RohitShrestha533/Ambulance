@@ -23,7 +23,7 @@ const LoginPage = () => {
         localStorage.setItem("hospitaltoken", token);
         alert("Login successful");
         setTimeout(() => {
-          navigate("/navs", { replace: true, state: { name } });
+          navigate("/navs");
         }, 1000);
       } else {
         setError(message);

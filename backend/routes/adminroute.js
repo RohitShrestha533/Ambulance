@@ -8,6 +8,8 @@ import {
   revenuechart,
   bookingdetails,
   Adminpassword,
+  revenuechartadmin,
+  tophospital,
 } from "../controllers/adminController.js";
 import { checkAuth } from "../middleware/checkAuth.js";
 const router = express.Router();
@@ -18,6 +20,8 @@ router.post("/change-password", Adminpassword);
 router.post("/adminLogout", adminLogout);
 
 router.get("/AdminData", checkAuth, AdminData);
+router.get("/revenueweek", revenuechartadmin);
+router.get("/top-hospitals", tophospital);
 router.put("/UpdateAdmin", checkAuth, UpdateAdmin);
 
 router.post("/admin/revenuechart", checkAuth, revenuechart);

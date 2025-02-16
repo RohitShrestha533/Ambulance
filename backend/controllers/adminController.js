@@ -304,3 +304,121 @@ export const bookingdetails = async (req, res) => {
     res.status(500).json({ message: "Error fetching booking stats" });
   }
 };
+// export const revenuechartadmin = async (req, res) => {
+//   try {
+//     const revenueData = await Booking.aggregate([
+//       {
+//         $match: { bookingstatus: "completed" },
+//       },
+//       {
+//         $group: {
+//           _id: {
+//             week: { $isoWeek: "$createdAt" },
+//             year: { $isoWeekYear: "$createdAt" },
+//           },
+//           totalRevenue: { $sum: "$price" },
+//         },
+//       },
+//       { $sort: { "_id.year": -1, "_id.week": -1 } },
+//     ]);
+//     res.json(revenueData);
+//   } catch (error) {
+//     console.error("Error fetching weekly revenue:", error);
+//     res.status(500).send("Server Error");
+//   }
+// };
+
+// Get top hospitals based on completed bookings
+
+// export const tophospital = async (req, res) => {
+//   try {
+//     const topHospitals = await Booking.aggregate([
+//       {
+//         $match: { bookingstatus: "completed" },
+//       },
+//       {
+//         $group: {
+//           _id: "$hospital",
+//           bookingCount: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: "hospitals",
+//           localField: "_id",
+//           foreignField: "_id",
+//           as: "hospitalDetails",
+//         },
+//       },
+//       { $unwind: "$hospitalDetails" },
+//       { $sort: { bookingCount: -1 } },
+//       { $limit: 3 },
+//     ]);
+//     res.json(topHospitals);
+//   } catch (error) {
+//     console.error("Error fetching top hospitals:", error);
+//     res.status(500).send("Server Error");
+//   }
+// };
+
+// Revenue chart data for the past weeks
+export const revenuechartadmin = async (req, res) => {
+  try {
+    const revenueData = await Booking.aggregate([
+      {
+        $match: {
+          bookingstatus: "completed",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            week: { $isoWeek: "$createdAt" },
+            year: { $isoWeekYear: "$createdAt" },
+          },
+          totalRevenue: { $sum: "$price" },
+        },
+      },
+      { $sort: { "_id.year": -1, "_id.week": -1 } },
+    ]);
+
+    res.json(revenueData);
+  } catch (error) {
+    console.error("Error fetching weekly revenue:", error);
+    res.status(500).send("Server Error");
+  }
+};
+
+export const tophospital = async (req, res) => {
+  try {
+    const topHospitals = await Booking.aggregate([
+      {
+        $match: {
+          bookingstatus: "completed",
+        },
+      },
+      {
+        $group: {
+          _id: "$hospital",
+          bookingCount: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "hospitals",
+          localField: "_id",
+          foreignField: "_id",
+          as: "hospitalDetails",
+        },
+      },
+      { $unwind: "$hospitalDetails" },
+      { $sort: { bookingCount: -1 } },
+      { $limit: 3 },
+    ]);
+    console.log("HI", topHospitals);
+    res.json(topHospitals);
+  } catch (error) {
+    console.error("Error fetching top hospitals:", error);
+    res.status(500).send("Server Error");
+  }
+};

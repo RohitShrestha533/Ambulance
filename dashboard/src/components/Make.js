@@ -133,7 +133,7 @@ const Make = () => {
         <div className="col-lg-4 mb-4">
           <div className="card shadow-sm">
             <div className="card-body">
-              <h4>Top Hospitals</h4>
+              <h4>Top Hospital's ambulance booked</h4>
               <ul className="list-group">
                 {topHospital.map((hospital, index) => (
                   <li

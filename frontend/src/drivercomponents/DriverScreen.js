@@ -10,10 +10,12 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
+import DriverMapScreen from "./DriverMapScreen";
 const DriverScreen = () => {
   const [bookingHistory, setBookingHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [driverName, setDriverName] = useState(null);
+  const [reloadMap, setReloadMap] = useState(false);
   // let ip = "172.30.3.131";
   let ip = "192.168.18.12";
 
@@ -44,7 +46,36 @@ const DriverScreen = () => {
     }
   };
 
+  const fetchDriverDetails = async () => {
+    try {
+      const token = await AsyncStorage.getItem("drivertoken");
+      if (!token) {
+        Alert.alert("Error", "No token found, please login again");
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(`http://${ip}:5000/DriverData`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch driver details");
+      }
+      const data = await response.json();
+      console.log("hiii ", data.driver);
+      setDriverName(data.driver.fullname); // Assuming the API returns `fullname`
+    } catch (error) {
+      console.error("Error fetching driver details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
+    fetchDriverDetails();
     fetchBookingHistory();
   }, []);
 
@@ -73,6 +104,8 @@ const DriverScreen = () => {
       Alert.alert("Success", data.message);
 
       fetchBookingHistory();
+
+      setReloadMap((prev) => !prev);
     } catch (error) {
       console.error("Error cancelling booking:", error);
       Alert.alert("Error", "Failed to cancel booking");
@@ -139,6 +172,7 @@ const DriverScreen = () => {
             Alert.alert("Success", data.message);
 
             fetchBookingHistory();
+            setReloadMap((prev) => !prev);
           } catch (error) {
             console.error("Error confirming booking:", error);
             Alert.alert("Error", "Failed to confirm booking");
@@ -225,18 +259,22 @@ const DriverScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Welcome to the Page</Text>
-      {bookingHistory.length === 0 ? (
-        <Text style={styles.noHistoryText}>No booking history found.</Text>
-      ) : (
-        <FlatList
-          data={bookingHistory}
-          keyExtractor={(item) => item._id}
-          renderItem={renderBookingCard}
-          contentContainerStyle={styles.listContent}
-          ItemSeparatorComponent={Separator}
-        />
-      )}
+      <FlatList
+        data={bookingHistory}
+        keyExtractor={(item) => item._id}
+        renderItem={renderBookingCard}
+        ListHeaderComponent={
+          <>
+            <Text style={styles.header}>Welcome {driverName || ""}!</Text>
+            <View style={styles.mapContainer}>
+              {/* Force re-render of DriverMapScreen */}
+              <DriverMapScreen key={reloadMap ? "reload1" : "reload2"} />
+            </View>
+          </>
+        }
+        ListEmptyComponent={<Text style={styles.noHistoryText}></Text>}
+        contentContainerStyle={styles.listContent}
+      />
     </View>
   );
 };
@@ -245,7 +283,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    marginBottom: 90,
+    marginBottom: 70,
+  },
+  contentContainer: {
+    paddingBottom: 100,
+  },
+  mapContainer: {
+    height: 400,
+    width: "100%",
+    marginBottom: 20,
   },
   listContent: {
     padding: 16,

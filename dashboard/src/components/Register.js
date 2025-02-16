@@ -22,7 +22,7 @@ const Register = () => {
         adminData
       );
 
-      if (response.data.status === 200) {
+      if (response.data.status === "ok") {
         alert(" successfully Created admin");
         navigate("/login");
       } else {

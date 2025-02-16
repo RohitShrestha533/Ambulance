@@ -41,7 +41,7 @@ export const driverRegister = async (req, res) => {
   if (!phoneRegex.test(phone)) {
     return res.status(400).send({ message: "Phone number must be 10 digits." });
   }
-  const session = await mongoose.startSession(); // Start a session for the transaction
+  const session = await mongoose.startSession();
 
   try {
     session.startTransaction();
@@ -81,7 +81,7 @@ export const driverRegister = async (req, res) => {
       ambulanceType,
       hospital: hospitalId,
       location: {
-        type: "Point", // Geospatial type
+        type: "Point",
         coordinates: location.coordinates,
       },
     });
@@ -271,10 +271,10 @@ export const drivercancelBooking = async (req, res) => {
 };
 
 export const completeBooking = async (req, res) => {
-  let session; // Move session declaration outside the try block
+  let session;
   try {
     const driverId = req.driver.driverId;
-    const { bookingId, msg, latitude, longitude } = req.body; // Receiving latitude and longitude from the frontend
+    const { bookingId, msg, latitude, longitude } = req.body;
     const booking = await Booking.findById(bookingId);
 
     if (!booking) {
@@ -282,7 +282,6 @@ export const completeBooking = async (req, res) => {
     }
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
-      // Convert degrees to radians
       const toRad = (value) => (value * Math.PI) / 180;
 
       const R = 6371;
@@ -297,9 +296,9 @@ export const completeBooking = async (req, res) => {
           Math.sin(dLon / 2);
 
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c; // Distance in km
+      const distance = R * c;
 
-      return distance * 1000; // Convert to meters
+      return distance * 1000;
     };
 
     const userLatitude = booking.userlocation.coordinates[1];
@@ -314,10 +313,9 @@ export const completeBooking = async (req, res) => {
 
     console.log(`Distance to destination: ${distance} meters`);
     let price;
-    const initialDistance = booking.distance; // Initial distance (stored in the booking)
-    const totalDistance = initialDistance + distance; // Total distance for price calculation
+    const initialDistance = booking.distance;
+    const totalDistance = initialDistance + distance;
     console.log(totalDistance);
-    // Price calculation based on ambulance type
     if (booking.ambulanceType === "Basic") {
       price = totalDistance * 0.05;
     } else if (booking.ambulanceType === "Advance") {
@@ -341,11 +339,11 @@ export const completeBooking = async (req, res) => {
       }
       booking.bookingstatus = "completed";
       booking.distance = totalDistance;
-      booking.price = price; // Save the calculated price
+      booking.price = price;
       booking.destinationlocation = {
         type: "Point",
         coordinates: [longitude, latitude], // Save destination latitude and longitude
-      }; // Saving the destination location
+      };
 
       await booking.save();
 
@@ -464,12 +462,12 @@ export const updateDriverLocation = async (req, res) => {
   }
   try {
     const driver = await Driver.findOneAndUpdate(
-      driverId, // Use driver ID to identify the correct driver
+      driverId,
       {
         $set: {
           location: {
             type: "Point",
-            coordinates: [longitude, latitude], // Save longitude, latitude in that order
+            coordinates: [longitude, latitude],
           },
         },
       },
@@ -484,5 +482,40 @@ export const updateDriverLocation = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const pickup = async (req, res) => {
+  try {
+    const driverId = req.driver.driverId;
+
+    const booking = await Booking.findOne({
+      driverId,
+      bookingstatus: "pending",
+    }).select("userlocation destinationlocation");
+
+    if (!booking) {
+      return res.status(200).json({
+        message: "No active bookings found",
+        userLocation: null,
+        destination: null,
+      });
+    }
+
+    res.json({
+      userLocation: {
+        latitude: booking.userlocation.coordinates[1],
+        longitude: booking.userlocation.coordinates[0],
+      },
+      destination: {
+        latitude: booking.destinationlocation.coordinates[1],
+        longitude: booking.destinationlocation.coordinates[0],
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching booking:", error);
+    res
+      .status(500)
+      .json({ message: "Server error", userLocation: null, destination: null });
   }
 };

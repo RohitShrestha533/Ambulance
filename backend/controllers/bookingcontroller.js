@@ -125,8 +125,8 @@ export const sosbook = async (req, res) => {
       {
         $geoNear: {
           near: { type: "Point", coordinates: [latitude, longitude] },
-          distanceField: "distance", // The field that will store the distance in meters
-          maxDistance: 20000, // Maximum distance (in meters)
+          distanceField: "distance",
+          maxDistance: 20000,
           spherical: true,
         },
       },
@@ -170,7 +170,7 @@ export const sosbook = async (req, res) => {
       },
       destinationlocation: {
         type: "Point",
-        coordinates: [], // Empty coordinates for now
+        coordinates: [],
       },
       price: null,
       ambulanceType: ambulanceType,
