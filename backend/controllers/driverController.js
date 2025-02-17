@@ -519,3 +519,63 @@ export const pickup = async (req, res) => {
       .json({ message: "Server error", userLocation: null, destination: null });
   }
 };
+
+export const driveambu = async (req, res) => {
+  try {
+    const userId = req.user.userId; // If you are using JWT authentication, `req.userId` will be added by the middleware
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const booking = await Booking.findOne({
+      userId: userId,
+      bookingstatus: { $nin: ["pending", "completed", "cancelled"] },
+    });
+
+    if (!booking) {
+      return res.status(404).json([]);
+    }
+
+    res.json([booking]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// export const apiambudrivers = async (req, res) => {
+//   try {
+//     const { driverId } = req.params;
+
+//     const driver = await Driver.findById(driverId).select("location");
+
+//     if (!driver) return res.status(404).json({ message: "Driver not found" });
+
+//     res.json({
+//       latitude: driver.location.coordinates[1], // Latitude
+//       longitude: driver.location.coordinates[0], // Longitude
+//     });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+export const apiambudrivers = async (req, res) => {
+  try {
+    const { driverId } = req.params;
+
+    const driver = await Driver.findById(driverId).select("location"); // Only select the location field
+
+    if (!driver) {
+      return res.status(404).json({ message: "Driver not found" });
+    }
+
+    // Return the latitude and longitude from the location field
+    res.json({
+      latitude: driver.location.coordinates[1], // Latitude
+      longitude: driver.location.coordinates[0], // Longitude
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

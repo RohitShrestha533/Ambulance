@@ -50,6 +50,9 @@ const HomeScreen = () => {
   const userhistory = () => {
     navigation.navigate("History");
   };
+  const loco = () => {
+    navigation.navigate("AmbuLocation");
+  };
   const handleBookAmbulance = () => {
     if (isLoggedIn) {
       navigation.navigate("Test");
@@ -75,7 +78,7 @@ const HomeScreen = () => {
           <Text style={styles.cardText}>Book Ambulance</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} onPress={() => alert("calling")}>
+        <TouchableOpacity style={styles.card} onPress={loco}>
           <Ionicons name="call" size={40} color="red" />
           <Text style={styles.cardText}>Emergency Call</Text>
         </TouchableOpacity>

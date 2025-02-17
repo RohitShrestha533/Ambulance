@@ -15,9 +15,17 @@ import {
   cancelBooking,
   sosbook,
 } from "../controllers/bookingcontroller.js";
+import { apiambudrivers, driveambu } from "../controllers/driverController.js";
 import { getNearbyHospitals } from "../controllers/hospitalController.js";
 import { authenticateJWT } from "../middleware/authenticateJWT.js";
 const router = express.Router();
+
+router.get("/driver/api/ambu", authenticateJWT, driveambu);
+router.get(
+  "/driver/api/ambudrivers/:driverId",
+  authenticateJWT,
+  apiambudrivers
+);
 
 router.post("/drivers-nearby", authenticateJWT, driversnearby);
 router.get("/driverlocation", driverlocation);

@@ -32,7 +32,7 @@ import RegisterHospital from "./src/components/RegisterHospital";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import ForgetPassword from "./src/components/ForgetPassword";
-
+import AmbuLocation from "./src/components/AmbuLocation";
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -46,6 +46,7 @@ export default function App() {
         />
 
         <Stack.Screen name="HomeScreen" component={HomeScreen} />
+        <Stack.Screen name="AmbuLocation" component={AmbuLocation} />
         <Stack.Screen name="Test" component={Test} />
         <Stack.Screen name="Nearhospital" component={Nearhospital} />
         <Stack.Screen name="Map" component={Map} />
