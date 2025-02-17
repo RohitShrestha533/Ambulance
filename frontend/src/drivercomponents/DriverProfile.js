@@ -103,7 +103,7 @@ const Item = ({ name, navigation }) => {
               ? localStorage.removeItem("drivertoken")
               : await AsyncStorage.removeItem("drivertoken");
             console.log("helllo ");
-            navigation.reset({ index: 0, routes: [{ name: "Login" }] });
+            navigation.reset({ index: 0, routes: [{ name: "Main" }] });
             alert("Logged out successfully");
           } else {
             alert("No token found, user might already be logged out.");

@@ -77,8 +77,20 @@ const DriverScreen = () => {
   useEffect(() => {
     fetchDriverDetails();
     fetchBookingHistory();
-  }, []);
+    const interval = setInterval(() => {
+      console.log("Refreshing driver data...");
+      fetchBookingHistory();
+    }, 10000);
+    const mapInterval = setInterval(() => {
+      console.log("Refreshing map...");
+      setReloadMap((prev) => !prev);
+    }, 100000); // Refresh map every 1 second
 
+    return () => {
+      clearInterval(interval);
+      clearInterval(mapInterval);
+    };
+  }, []);
   const handleCancel = async (bookingId) => {
     try {
       const token = await AsyncStorage.getItem("drivertoken");

@@ -124,7 +124,7 @@ const RegisterHospital = () => {
           alert("submitted successful wait for admin approve");
           navigation.reset({
             index: 0,
-            routes: [{ name: "Login" }],
+            routes: [{ name: "Main" }],
           });
         } else {
           alert(response.data.message);

@@ -115,9 +115,8 @@ const DriverMain = () => {
       getCurrentLocation(); // Fetch new location every minute
     }, 60000);
 
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, []); // Empty dependency array ensures this runs only once when the component is mounted
-
+    return () => clearInterval(interval);
+  }, []);
   return (
     <View style={{ flex: 1 }}>
       <Tab.Navigator
