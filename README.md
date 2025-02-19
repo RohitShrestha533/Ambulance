@@ -1,5 +1,13 @@
 ![AmbuTrack Logo](./frontend/assets/AmbuTrackLogo.png "AmbuTrack Logo")
 
+# .env file
+
+PORT=
+MONGO_URI=
+JWT_SECRET_KEY=
+EMAIL_PASS=
+EMAIL=
+
 # AmbuTrack
 
 **Efficient and Transparent Ambulance Booking System**
