@@ -2,7 +2,7 @@
 
 # .env file
 
-PORT=
+PORT=cd
 MONGO_URI=
 JWT_SECRET_KEY=
 EMAIL_PASS=

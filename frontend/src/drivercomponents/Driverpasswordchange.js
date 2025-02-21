@@ -24,7 +24,7 @@ const Driverpasswordchange = () => {
   const [email, setEmail] = useState("");
 
   // let ip = "172.30.3.131";
-  let ip = "192.168.18.12";
+  let ip = "192.168.240.106";
 
   useEffect(() => {
     const fetchDriverData = async () => {

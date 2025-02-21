@@ -8,7 +8,7 @@ const DriverMapScreen = () => {
   const [destination, setDestination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [noBooking, setNoBooking] = useState(false);
-  const ip = "192.168.18.12";
+  const ip = "192.168.240.106";
 
   useEffect(() => {
     const fetchBookingDetails = async () => {

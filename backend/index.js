@@ -95,6 +95,16 @@ const sendOTP = (email, otp) => {
 
 let otpStorage = {}; // This will hold the OTP temporarily (usually you store this in a database)
 
+app.post("/sendOtp", async (req, res) => {
+  const { email } = req.body;
+  const otp = generateOTP();
+  otpStorage[email] = otp; // Store OTP temporarily
+
+  // Send OTP to user's email
+  sendOTP(email, otp);
+
+  res.json({ message: "OTP sent to your email" });
+});
 app.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   const admin = await Admin.findOne({ email });

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   ImageBackground,
+  ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native";
@@ -28,6 +29,58 @@ const Login = () => {
   let ip = "192.168.18.12";
   // let ip = "192.168.4.106";
 
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
+  async function sendOtp() {
+    if (!email) {
+      alert("Please enter a valid email.");
+      return;
+    }
+    if (!phone || !password || !confirmpassword) {
+      alert("Please enter a all field.");
+      return;
+    }
+    if (password !== confirmpassword) {
+      alert("Please enter same password.");
+      return;
+    }
+
+    try {
+      // Call your backend to send OTP to the email
+      const response = await axios.post(`http://${ip}:5000/sendOtp`, { email });
+
+      if (response.data.message === "OTP sent to your email") {
+        alert("OTP sent to your email!");
+        setOtpSent(true);
+      }
+    } catch (error) {
+      alert("Failed to send OTP.");
+    }
+  }
+
+  async function verifyOtp() {
+    if (!otp) {
+      alert("Please enter the OTP.");
+      return;
+    }
+
+    try {
+      // Call your backend to verify OTP
+      const response = await axios.post(`http://${ip}:5000/verify-otp`, {
+        email,
+        otp,
+      });
+
+      if (response.data.message === "OTP verified successfully") {
+        UserRegisterHandel();
+      } else {
+        alert("Invalid OTP.");
+      }
+    } catch (error) {
+      alert("Failed to verify OTP.");
+    }
+  }
   async function UserLoginHandel() {
     if (!role) {
       alert("Please select a role before signing in.");
@@ -108,6 +161,7 @@ const Login = () => {
       .then((response) => {
         if (response.data.status === "ok") {
           alert("User created successfully");
+          setIsSignUp(false);
         }
       })
       .catch((error) => {
@@ -121,7 +175,7 @@ const Login = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <ImageBackground
         source={require("../../assets/AmbuTrackLogo.png")}
         style={styles.imageBackground}
@@ -149,6 +203,8 @@ const Login = () => {
               placeholder="Email*"
               value={email}
               onChangeText={setEmail}
+              required
+              disabled={otpSent}
             />
 
             <TextInput
@@ -157,6 +213,8 @@ const Login = () => {
               placeholder="Phone number 98********"
               keyboardType="phone-pad"
               onChangeText={setPhone}
+              required
+              disabled={otpSent}
             />
 
             <TextInput
@@ -165,6 +223,8 @@ const Login = () => {
               onChangeText={setPassword}
               placeholder="Password*"
               secureTextEntry={!passwordVisible}
+              required
+              disabled={otpSent}
             />
             <TouchableOpacity
               onPress={() => setPasswordVisible(!passwordVisible)}
@@ -176,17 +236,38 @@ const Login = () => {
               onChangeText={setConfirmpassword}
               placeholder="Confirm Password*"
               secureTextEntry={!confirmPasswordVisible}
+              required
+              disabled={otpSent}
             />
             <TouchableOpacity
               onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
             ></TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => UserRegisterHandel()}
-            >
-              <Text style={styles.buttonText}>Create Account</Text>
-            </TouchableOpacity>
+            {/* Send OTP button */}
+            {!otpSent ? (
+              <TouchableOpacity style={styles.button} onPress={() => sendOtp()}>
+                <Text style={styles.buttonText}>Create Account</Text>
+              </TouchableOpacity>
+            ) : (
+              <>
+                <TextInput
+                  style={styles.input}
+                  value={otp}
+                  onChangeText={setOtp}
+                  placeholder="Enter OTP"
+                  keyboardType="numeric"
+                  required
+                />
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => verifyOtp()}
+                >
+                  <Text style={styles.buttonText}>Verify OTP</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {/* Register for Hospital */}
             <TouchableOpacity
               style={{ alignItems: "center" }}
               onPress={() => {
@@ -204,6 +285,7 @@ const Login = () => {
               value={email}
               onChangeText={setEmail}
               placeholder="Email*"
+              required
             />
 
             <TextInput
@@ -226,6 +308,7 @@ const Login = () => {
               <Picker.Item label="User" value="user" />
               <Picker.Item label="Driver" value="driver" />
             </Picker>
+
             {/* Login Button */}
             <TouchableOpacity
               style={styles.button}
@@ -233,6 +316,7 @@ const Login = () => {
             >
               <Text style={styles.buttonText}>Sign In</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={{ alignItems: "center" }}
               onPress={() => {
@@ -244,7 +328,7 @@ const Login = () => {
           </>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
